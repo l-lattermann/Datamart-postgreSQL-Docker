@@ -1,5 +1,8 @@
 # Ignore itself
 .gitignore
 
+# Environment variables
+scratches/postgres_poc/.env
+
 # Ignore venv
 .venv/
