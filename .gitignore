@@ -1,2 +1,5 @@
+# Ignore itself
+.gitignore
+
 # Ignore venv
 .venv/
