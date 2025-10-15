@@ -1,8 +1,14 @@
-# Ignore itself
-.gitignore
-
 # Environment variables
 scratches/postgres_poc/.env
 
 # Ignore venv
 .venv/
+
+# Ignore python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+
+# Ignore DS_Store files
+.DS_Store
