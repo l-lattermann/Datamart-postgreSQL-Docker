@@ -1,6 +1,9 @@
 # Ignore project tree file
 tree.txt
 
+# Ignore the db schema txt file
+src/sql/01_shema.txt
+
 # Ignore .env files
 .env
 .env.*
