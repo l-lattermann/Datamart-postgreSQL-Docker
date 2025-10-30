@@ -13,7 +13,7 @@ DB_NAME = os.getenv("DB_NAME", "default_profile")
 DB_USER = os.getenv("DB_USER", "default_user")
 DB_PASSWORD = os.getenv("DB_PASSWORD", "default_pass")
 DB_HOST = os.getenv("DB_HOST", "localhost")
-DB_PORT = int(os.getenv("DB_PORT", "0000"))
+DB_HOST_PORT = int(os.getenv("DB_HOST_PORT", "0000"))
 
 # --- Example usage ---
 if __name__ == "__main__":
@@ -23,7 +23,7 @@ if __name__ == "__main__":
             user=DB_USER,
             password=DB_PASSWORD,
             host=DB_HOST,
-            port=DB_PORT
+            port=DB_HOST_PORT
         )
         print("Connected to PostgreSQL")
         print()

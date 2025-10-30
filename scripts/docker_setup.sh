@@ -78,6 +78,24 @@ docker info
 echo ""
 echo ""
 echo "== DB Test =="
-docker restart postgres_db
-docker port postgres_db
-python3 "$DB_CONN_TEST"
+sleep 3
+if python3 "$DB_CONN_TEST" 2>&1 | grep -iq "Connection refused"; then
+    COUNTER=1
+    until python3 "$DB_CONN_TEST" | grep -iq "Connection refused"
+    do
+        echo "DB test failed. Connection to Container refused."
+        echo "Restaring Docker Container \"$DOCKER_PROFILE\" to get right port mapping. Try No.: \"$COUNTER\""
+        docker restart "$DOCKER_PROFILE"
+        docker port "$DOCKER_PROFILE"
+        sleep 2
+        COUNTER=$((COUNTER + 1))
+        [ "$COUNTER" -gt 5 ] && break
+    done
+else
+    echo "-> Conatiner is reachable, DB is up!"
+    python3 "$DB_CONN_TEST"
+fi
+
+echo ""
+echo ""
+echo "======== Setup finished ========"

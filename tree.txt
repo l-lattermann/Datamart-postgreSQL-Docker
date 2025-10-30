@@ -1,0 +1,16 @@
+.
+├── config
+├── config.py
+├── delete
+├── requirements.txt
+├── scratches
+│   └── postgres_poc
+├── scripts
+│   ├── docker_setup.sh
+│   └── docker_teardown.sh
+├── tests
+│   ├── db_connection_test.py
+│   └── docker-compose.yml
+└── tree.txt
+
+6 directories, 8 files
