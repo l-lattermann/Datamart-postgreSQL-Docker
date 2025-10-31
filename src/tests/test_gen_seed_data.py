@@ -3,6 +3,7 @@ import datetime
 import re
 import src.db.gen_seed_data as farmer
 import src.db.data_lists as seeds
+import logging
 
 
 
@@ -24,10 +25,10 @@ def test_gen_dummydata_accounts():
     
     # Sanity check
     for i in range(10):
-        print(data[0][i])
-        print(data[3][i])
-        print(data[4][i])
-    print()
+        logging.info(data[0][i])
+        logging.info(data[3][i])
+        logging.info(data[4][i])
+    logging.info('')
     # Check roles
     assert data[3].count('admin') == seeds.admin_count
     # Check timestamp dtype
@@ -52,9 +53,9 @@ def test_gen_dummydata_credentials():
     
     # Sanity check
     for i in range(10):
-        print(data[0][i])
-        print(data[1][i])
-    print()
+        logging.info(data[0][i])
+        logging.info(data[1][i])
+    logging.info('')
 
     # Check password hash length
     for pwd in data[0]:
@@ -84,12 +85,12 @@ def test_gen_dummydata_addresses():
 
     # Sanity check
     for i in range(10):
-        print(data[0][i])
-        print(data[1][i])
-        print(data[2][i])
-        print(data[3][i])
-        print(data[4][i])
-    print()
+        logging.info(data[0][i])
+        logging.info(data[1][i])
+        logging.info(data[2][i])
+        logging.info(data[3][i])
+        logging.info(data[4][i])
+    logging.info('')
 
     # Check country names
     for country in data[4]:
@@ -107,11 +108,11 @@ def test_gen_dummydata_accommodations():
         assert seeds.num_gen_dummydata == len(item)
     # Sanity check
     for i in range(10):
-        print(data[0][i])
-        print(data[1][i])
-        print(data[2][i])
-        print(data[3][i])
-    print()
+        logging.info(data[0][i])
+        logging.info(data[1][i])
+        logging.info(data[2][i])
+        logging.info(data[3][i])
+    logging.info('')
 
 def test_gen_dummydata_images():
     '''
@@ -126,10 +127,10 @@ def test_gen_dummydata_images():
         assert seeds.num_gen_dummydata == len(item) 
     # Sanity check
     for i in range(10):
-        print(data[0][i])
-        print(data[1][i])
-        print(data[2][i])
-    print()
+        logging.info(data[0][i])
+        logging.info(data[1][i])
+        logging.info(data[2][i])
+    logging.info('')
     # Check timestamp dtype
     for item in data[2]:
         assert type(item) == datetime.datetime
@@ -140,11 +141,6 @@ def test_gen_dummydata_images():
     for key in data[1]:
         assert re.match(r"^images/[a-f0-9\-]{36}\.[a-z]{3,4}$", key)
 
-def test_gen_dummydata_accommodation_images():
-    '''
-    Test function checking the generated output from gen_dummydata_accommodation_images.
-    '''
-    pass
 def test_gen_dummydata_accommodation_calendar():
     '''
     Test function checking the generated output from gen_dummydata_accommodation_calendar.

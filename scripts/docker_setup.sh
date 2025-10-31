@@ -1,101 +1,172 @@
 #!/bin/zsh
+# ============================================================
+# ================ SETUP SCRIPT: COLIMA + DOCKER ===============
+# ============================================================
 
-# Install Colima and Docker
+# --- Enable unified logging (stdout + stderr to logs/app.log) ---
+exec > >(tee -a logs/app.log) 2>&1
+
+# ============================================================
+# ====================== INSTALLATION =========================
+# ============================================================
+
+# Install required components if missing
 brew install colima
 brew install docker
 brew install docker-compose
 
-# --- Configuration ---
+
+# ============================================================
+# ====================== CONFIGURATION ========================
+# ============================================================
+
 # Import variables from .env
 set -e
 set -a
-source scratches/postgres_poc/.env
+source .env
 set +a
 
-# Colima
+# Colima configuration
 COLIMA_PROFILE=$COLIMA_PROFILE
 CPU=$CPU
 MEM=$MEM
 DISK=$DISK
 
-# Docker
-YML_FILE="./scratches/postgres_poc/docker-compose.yml"
-DOCKER_PROFILE="postgres_db"
+# Docker configuration
+YML_FILE=$YML_FILE
+DOCKER_PROFILE=$DOCKER_PROFILE
 
-# --- Check if Colima is running ---
+
+# ============================================================
+# ======================== COLIMA ============================
+# ============================================================
+
 echo ""
-echo "=== Checking $COLIMA_PROFILEc Colima-VM status=="
-# If VM is not running
+echo "=== Checking Colima VM status for profile: $COLIMA_PROFILE ==="
+
+# Check if Colima VM is running
 if colima status "$COLIMA_PROFILE" 2>&1 | grep -qi "not running"; then
-    echo "-> Colima $COLIMA_PROFILE is not running.."
-    # If VM is not running but exists
-    if colima list 2>&1| grep -qi "$COLIMA_PROFILE"; then
-        echo "-> Colima $COLIMA_PROFILE exist. Restarting it..."
+    echo "-> Colima $COLIMA_PROFILE is not running."
+    
+    # If the VM exists but is stopped
+    if colima list 2>&1 | grep -qi "$COLIMA_PROFILE"; then
+        echo "-> Colima $COLIMA_PROFILE exists. Restarting it..."
         colima restart "$COLIMA_PROFILE"
-    # If VM is not running and does not exist
+
+    # If the VM does not exist, create it
     else
-        echo "-> Colima $COLIMA_PROFILE does not exist. Creating it..."
+        echo "-> Colima $COLIMA_PROFILE does not exist. Creating a new VM..."
         colima start --profile "$COLIMA_PROFILE" --cpu "$CPU" --memory "$MEM" --disk "$DISK"
     fi
-# If VM is running
-else
-    echo "-> Colima $COLIMA_PROFILE is running."
-fi
-# Final Colima status check 
-echo ""
-echo "== Colima status =="
-colima status $COLIMA_PROFILE
-#colima stop postgre && colima delete -f postgre 
 
-# --- Check if Docker Container is running ---
+# If the VM is already running
+else
+    echo "-> Colima $COLIMA_PROFILE is already running."
+fi
+
+# Show Colima status summary
 echo ""
-echo "=== Checking $DOCKER_PROFILE Docker Cointainer status=="
-# Docker container is running
+echo "=== Colima Status Summary ==="
+colima status "$COLIMA_PROFILE"
+
+
+# ============================================================
+# ========================= DOCKER ===========================
+# ============================================================
+
+echo ""
+echo "=== Checking Docker Context ==="
+docker context ls
+docker info | head -n 5
+
+# --- Check for orphaned PostgreSQL volumes ---
+echo ""
+echo "=== Checking for Orphaned Docker Volumes ==="
+
+if docker volume ls --format '{{.Name}}' 2>/dev/null | grep -iq "$PG_VOLUME_NAME"; then
+    echo "-> Orphaned volume \"$PG_VOLUME_NAME\" found. Deleting it..."
+    docker volume rm -f "$PG_VOLUME_NAME"
+    echo "-> Remaining Docker volumes:"
+    docker volume ls
+else
+    echo "-> No orphaned volumes found."
+fi
+
+
+# --- Check container status ---
+echo ""
+echo "=== Checking Docker Container: $DOCKER_PROFILE ==="
+
+# If container is already running
 if docker ps | grep -qi "$DOCKER_PROFILE"; then
-    echo "-> $DOCKER_PROFILE Container is running"
-else 
-    echo "-> $DOCKER_PROFILE Container is not running"
-    echo "-> Starting $DOCKER_PROFILE from $YML_FILE"
-    # Wait for Docker daemon socket inside Colima to be available
+    echo "-> $DOCKER_PROFILE container is already running."
+
+# If container is not running, start it
+else
+    echo "-> $DOCKER_PROFILE container is not running."
+    echo "-> Starting container using $YML_FILE ..."
+    
+    # Wait until Docker daemon socket inside Colima becomes available
     until docker info >/dev/null 2>&1; do
-    echo "Waiting for Docker daemon..."
-    sleep 2
+        echo "Waiting for Docker daemon to become ready..."
+        sleep 2
     done
+    
+    # Start container via docker-compose
     docker-compose -f "$YML_FILE" up -d
 fi
 
-# --- Final Colima status check ---
+
+# ============================================================
+# ====================== FINAL STATUS =========================
+# ============================================================
+
+# Show Colima and Docker runtime info
 echo ""
-echo "== Colima status =="
+echo "=== Final Colima Status ==="
 colima list
 
-# --- Final Docker status check ---
 echo ""
-echo "== Docker status =="
+echo "=== Final Docker Status ==="
 docker info
+echo ""
+echo "=== Current Docker Volumes ==="
+docker volume ls
 
-# --- DB connection test ---
+
+# ============================================================
+# ===================== DATABASE TEST =========================
+# ============================================================
+
 echo ""
 echo ""
-echo "== DB Test =="
+echo "=== Running Database Connection Test ==="
 sleep 3
-if python3 "$DB_CONN_TEST" 2>&1 | grep -iq "Connection refused"; then
-    COUNTER=1
-    until python3 "$DB_CONN_TEST" | grep -iq "Connection refused"
-    do
-        echo "DB test failed. Connection to Container refused."
-        echo "Restaring Docker Container \"$DOCKER_PROFILE\" to get right port mapping. Try No.: \"$COUNTER\""
+
+MAX_RETRIES=5
+COUNTER=1
+
+# Initial connection attempt
+if python3 "$DB_CONN_TEST"; then
+    echo "-> Database reachable, container is up!"
+else
+    echo "-> Initial DB test failed. Attempting container restart..."
+    
+    # Retry loop
+    while ! python3 "$DB_CONN_TEST"; do
+        echo "-> DB still unreachable. Restarting \"$DOCKER_PROFILE\" (attempt $COUNTER/$MAX_RETRIES)..."
         docker restart "$DOCKER_PROFILE"
         docker port "$DOCKER_PROFILE"
         sleep 2
         COUNTER=$((COUNTER + 1))
-        [ "$COUNTER" -gt 5 ] && break
+        [ "$COUNTER" -gt "$MAX_RETRIES" ] && break
     done
-else
-    echo "-> Conatiner is reachable, DB is up!"
-    python3 "$DB_CONN_TEST"
 fi
 
-echo ""
-echo ""
-echo "======== Setup finished ========"
+# Final outcome
+if [ "$COUNTER" -gt "$MAX_RETRIES" ]; then
+    echo "ERROR: Database could not be reached after $MAX_RETRIES attempts."
+    exit 1
+else
+    echo "======== Setup Finished Successfully ========"
+fi

@@ -4,6 +4,8 @@ import datetime
 import src.db.data_lists as seeds
 import rstr
 
+from src.db.connection import db_connection
+
 
 def gen_dummydata_accounts():
     '''
@@ -53,6 +55,7 @@ def gen_dummydata_accounts():
     
     return email_adresses, first_names, last_names, roles, timestamps
 
+    # Insert
 def gen_dummydata_credentials():
     '''
     Function to fill dummy data into credentials table.
@@ -166,24 +169,20 @@ def gen_dummydata_images():
         storage_keys.append(storage_key)
     return mimes, storage_keys, created_at
 
-
-
-
-
-def gen_dummydata_accommodation_images():
-    '''
-    Function to fill dummy data into accommodation_images table.
-    Params: None
-    Returns: None
-    '''
-    pass
 def gen_dummydata_accommodation_calendar():
     '''
     Function to fill dummy data into accommodation_calendar table.
     Params: None
-    Returns: None
+    Returns: day, is_blocked, price_cents, min_nights
     '''
-    pass
+    days = []
+    is_blocked = []
+    price_cents = []
+    min_nights = []
+    # Generate calendar entries
+
+    return days, is_blocked, price_cents, min_nights
+
 def gen_dummydata_payments():
     '''
     Function to fill dummy data into payments table.

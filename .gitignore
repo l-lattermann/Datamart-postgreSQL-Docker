@@ -1,21 +1,40 @@
-# Ignore project tree file
-tree.txt
-
-# Ignore the db schema txt file
-src/sql/01_shema.txt
-
-# Ignore .env files
+# ============================================
+# Environment and configuration
+# ============================================
 .env
 .env.*
+src/db/seed_order.txt
 
-# Ignore venv
+# ============================================
+# Virtual environments
+# ============================================
 .venv/
+venv/
 
-# Ignore python cache
+# ============================================
+# Build and cache files
+# ============================================
 __pycache__/
 *.py[cod]
 *$py.class
 *.pyo
+.pytest_cache/
 
-# Ignore DS_Store files
+# ============================================
+# OS and editor files
+# ============================================
 .DS_Store
+*.swp
+*.swo
+
+# ============================================
+# Project-specific artifacts
+# ============================================
+tree.txt
+src/sql/01_schema.txt
+
+# ============================================
+# Logs and runtime output
+# ============================================
+logs/
+*.log
