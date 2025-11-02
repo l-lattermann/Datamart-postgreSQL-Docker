@@ -1,19 +1,26 @@
+# docker-compose.yml
+# PostgreSQL container configuration (uses .env for parameterization)
+# ------------------------------------------------------------
 
 services:
   postgres:
     image: ${DB_IMAGE}
     container_name: ${DOCKER_PROFILE}
     restart: unless-stopped
+
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
+
     ports:
       - "${DB_HOST_PORT}:5432"
+
     volumes:
       - pgdata:${PG_DATA}
+
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U app -d ${DB_NAME}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 5s
       timeout: 3s
       retries: 10

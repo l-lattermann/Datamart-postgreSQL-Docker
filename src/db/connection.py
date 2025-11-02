@@ -1,17 +1,50 @@
-import psycopg2
+"""
+connection.py
 
-# Go two levels up (src/db → project root)
+Database connection utilities for PostgreSQL.
+
+Provides:
+- db_connection(): returns a psycopg2 connection using src.config credentials
+- check_connection(): verifies connectivity and logs result
+
+Assumptions:
+- src.config defines DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_HOST_PORT
+- src.utils.logger is a configured logger
+"""
+
+# ---------------------------------------------------------------------------
+# Stdlib imports
+# ---------------------------------------------------------------------------
 import sys
 from pathlib import Path
+
+# ---------------------------------------------------------------------------
+# Third-party imports
+# ---------------------------------------------------------------------------
+import psycopg2
+from psycopg2 import OperationalError
+
+# ---------------------------------------------------------------------------
+# Path/bootstrap
+# Go two levels up (src/db → project root) so src.* imports work when run standalone.
+# ---------------------------------------------------------------------------
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PROJECT_ROOT))
 
+# ---------------------------------------------------------------------------
+# Internal imports
+# ---------------------------------------------------------------------------
 from src import config
-from psycopg2 import OperationalError
 from src.utils.logger import logger
 
 
+# ---------------------------------------------------------------------------
+# Connection factory
+# ---------------------------------------------------------------------------
 def db_connection():
+    """
+    Return a psycopg2 connection using credentials from src.config.
+    """
     return psycopg2.connect(
         dbname=config.DB_NAME,
         user=config.DB_USER,
@@ -21,8 +54,18 @@ def db_connection():
     )
 
 
-def check_connection():
-    conn = db_connection()
+# ---------------------------------------------------------------------------
+# Connection test
+# ---------------------------------------------------------------------------
+def check_connection() -> bool:
+    """
+    Try to establish a connection and execute a simple test query (SELECT 1).
+
+    Returns:
+        True  – if database responds correctly
+        False – if connection or query fails
+    """
+    conn = None
     try:
         conn = db_connection()
         with conn.cursor() as cur:
@@ -34,27 +77,8 @@ def check_connection():
 
     except (AssertionError, OperationalError, psycopg2.Error) as e:
         logger.error(f"Database connection failed: {e}")
-        return False  
+        return False
 
     finally:
         if conn is not None:
             conn.close()
-
-def get_db_schema():
-    conn = db_connection()
-    cur = conn.cursor()
-    cur.execute("""
-    SELECT table_name, column_name, data_type
-    FROM information_schema.columns
-    WHERE table_schema = 'public'
-    ORDER BY table_name, ordinal_position;
-    """)
-
-    logger.info("The datbase schema is:")
-    result = cur.fetchall()
-    if result:
-        for row in result:
-            logger.info(row)
-        conn.close()
-    else:
-        logger.info('NONE')
