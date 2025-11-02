@@ -1,44 +1,36 @@
 """
 conftest.py
 
-Global pytest configuration for the project.
-
-Features:
-- ensures project root is in sys.path
-- sets up logging to logs/test.log
-- redirects stdout/stderr (print) to pytest capture
+Pytest configuration: unified logging setup.
+Creates logs/test.log and attaches a single file handler to the root logger.
+Prevents duplicate handlers on test reload.
 """
 
 # ---------------------------------------------------------------------------
 # Stdlib imports
 # ---------------------------------------------------------------------------
 import os
-import sys
 import logging
-import pytest
 
-# ---------------------------------------------------------------------------
-# Path setup
-# ---------------------------------------------------------------------------
-ROOT = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, ROOT)
 
 # ---------------------------------------------------------------------------
 # Pytest configuration
 # ---------------------------------------------------------------------------
 def pytest_configure(config):
     """
-    Configure pytest logging and output capturing.
+    Configure pytest logging to write all output into logs/test.log.
     """
-    log_file = os.path.join("logs", "test.log")
-    os.makedirs(os.path.dirname(log_file), exist_ok=True)
+    os.makedirs("logs", exist_ok=True)
+    log_path = os.path.join("logs", "test.log")
 
-    logging.basicConfig(
-        filename=log_file,
-        filemode="w",
-        level=logging.INFO,
-        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-    )
+    # root logger
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
 
-    # Capture print() and stdout
-    config.option.capture = "tee-sys"
+    # prevent duplicate handlers on reload
+    if not any(isinstance(h, logging.FileHandler) for h in logger.handlers):
+        file_handler = logging.FileHandler(log_path, mode="w", encoding="utf-8")
+        file_handler.setFormatter(
+            logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s")
+        )
+        logger.addHandler(file_handler)
