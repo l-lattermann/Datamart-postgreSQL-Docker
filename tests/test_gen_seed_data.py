@@ -165,7 +165,7 @@ def test_gen_dummydata_images():
 
     # count check
     for item in data:
-        assert len(item) == seeds.num_gen_dummydata
+        assert len(item) == seeds.num_gen_dummydata*4
 
     # sanity log
     for i in range(10):
