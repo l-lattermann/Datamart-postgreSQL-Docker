@@ -92,7 +92,10 @@ FETCH_IDS_WHERE = """
     FROM {tbl}
     WHERE {where};
     """
-
+FETCH_IMG_ID_FROM_REVIEW_IMGS = """
+    SELECT image_id
+    FROM review_images
+    """
 # ============================================================================
 # 6. Table-specific INSERT templates (without ID columns)
 # ============================================================================

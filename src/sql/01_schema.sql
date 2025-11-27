@@ -122,7 +122,7 @@ CREATE TABLE reviews (
 
 CREATE TABLE review_images (
     review_id INT NOT NULL REFERENCES reviews(id) ON DELETE CASCADE,
-    image_id INT NOT NULL REFERENCES images(id) ON DELETE CASCADE,
+    k INT NOT NULL REFERENCES images(id) ON DELETE CASCADE,
     PRIMARY KEY (review_id, image_id)
 );
 

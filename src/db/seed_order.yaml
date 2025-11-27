@@ -1,5 +1,4 @@
 # Define the order of seeding data into tables
-
 order:
     - accounts
     - credentials
