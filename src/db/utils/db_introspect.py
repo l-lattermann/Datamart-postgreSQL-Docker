@@ -1,18 +1,3 @@
-"""
-db_introspect.py
-
-Utility helpers to:
-- list all tables in the current PostgreSQL schema
-- fetch column metadata for each table into pandas DataFrames
-- dump all table contents into raw lists and DataFrames
-
-Assumptions:
-- valid connection factory at src.db.connection.db_connection
-- SQL statements defined in src.db.sql_repo
-- logger configured at src.utils.logger
-"""
-
-
 # Stdlib imports
 import sys
 from pathlib import Path

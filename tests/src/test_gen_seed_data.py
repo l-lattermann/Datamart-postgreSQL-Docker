@@ -1,24 +1,11 @@
-"""
-test_gen_seed_data.py
-
-Pytest suite to verify that all dynamic seed generators in src.db.gen_seed_data
-produce the correct number of items, valid value ranges, and expected formats.
-
-Covers:
-- accounts
-- credentials
-- addresses
-- accommodations
-- images
-Stubs for: calendar, payments, bookings, reviews, conversations, messages, payouts.
-"""
-
-
 # Stdlib imports
 import datetime
 import re
 import logging
 
+# Third party imports
+from unittest.mock import patch, MagicMock
+import src.db.gen_seed_data as gen
 
 # Internal imports
 import src.db.gen_seed_data as farmer
@@ -175,45 +162,6 @@ def test_gen_dummydata_images():
     # storage key format
     for key in storage_key:
         assert re.match(r"^images/[a-f0-9\-]{36}\.[a-z]{3,4}$", key)
-
-
-
-# stubs for not-yet-implemented generators
-def test_gen_dummydata_accommodation_calendar():
-    pass
-
-
-def test_gen_dummydata_payments():
-    pass
-
-
-def test_gen_dummydata_bookings():
-    pass
-
-
-def test_gen_dummydata_reviews():
-    pass
-
-
-def test_gen_dummydata_review_images():
-    pass
-
-
-def test_gen_dummydata_conversations():
-    pass
-
-
-def test_gen_dummydata_messages():
-    pass
-
-
-from unittest.mock import patch, MagicMock
-import datetime
-import random
-import pytest
-
-import src.db.gen_seed_data as gen
-
 
 
 # PAYMENT METHODS

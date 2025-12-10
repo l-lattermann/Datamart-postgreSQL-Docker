@@ -1,36 +1,14 @@
-"""
-run_sql_files.py
-
-Execute a fixed sequence of SQL files against the configured PostgreSQL DB.
-
-Features:
-- ensures DB is reachable via check_connection()
-- runs SQL files in defined order from src/sql/
-- logs success or psycopg2 errors per file
-- triggers schema introspection at the end
-
-Assumptions:
-- src/db/connection.py provides db_connection() and check_connection()
-- src/db/db_introspect.py provides get_db_schema()
-- SQL files live under: PROJECT_ROOT/src/sql/
-"""
-
-
 # Stdlib imports
 from pathlib import Path
 import sys
 
-
 # Third-party imports
 import psycopg2
 
-
 # Path/bootstrap
 # Go two levels up (src/db → project root) so src.* imports work.
-
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PROJECT_ROOT))
-
 
 # Internal imports
 from src.db.connection import db_connection, check_connection
@@ -44,7 +22,7 @@ SQL_DIR = PROJECT_ROOT / "src" / "sql"
 
 FILES = [
     "01_schema.sql",
-    "02_seed.sql",
+    "02_seed.sql"
 ]
 
 # initial connectivity check, keep logic as-is

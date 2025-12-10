@@ -1,20 +1,7 @@
-"""
-test_check_connection.py
-
-Tests the behavior of src.db.connection.check_connection()
-based on the running state of Colima VM and Docker container.
-
-Logic:
-- if both Colima and Docker container are running → expect True
-- else → expect False
-"""
-
-
 # Stdlib imports
 import subprocess
 import os
 import sys
-
 
 # Internal imports
 from src.db.connection import check_connection
