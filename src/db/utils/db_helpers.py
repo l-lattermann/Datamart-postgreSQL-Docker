@@ -5,15 +5,13 @@ Utility functions for database operations, including:
 - printing all rows from a specified table for debugging purposes.
 """
 
-# ---------------------------------------------------------------------------
+
 # Internal imports
-# ---------------------------------------------------------------------------
 from src.db.connection import db_connection
 
 
-# ---------------------------------------------------------------------------
+
 # Function
-# ---------------------------------------------------------------------------
 def get_tbl_contents_as_str(table_name: str) -> str:
     """
     Connects to the database, retrieves all rows from the specified table,

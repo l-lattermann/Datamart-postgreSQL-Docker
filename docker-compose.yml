@@ -1,7 +1,5 @@
 # docker-compose.yml
 # PostgreSQL container configuration (uses .env for parameterization)
-# ------------------------------------------------------------
-
 services:
   postgres:
     image: ${DB_IMAGE}

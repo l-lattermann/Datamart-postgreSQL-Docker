@@ -12,35 +12,31 @@ Assumptions:
 - logger configured at src.utils.logger
 """
 
-# ---------------------------------------------------------------------------
+
 # Stdlib imports
-# ---------------------------------------------------------------------------
 import sys
 from pathlib import Path
 
-# ---------------------------------------------------------------------------
+
 # Third-party imports
-# ---------------------------------------------------------------------------
 import pandas as pd
 from psycopg2 import sql
 
-# ---------------------------------------------------------------------------
+
 # Path/bootstrap
 # Go two levels up (src/db/utils → project root) so imports work when run as script.
-# ---------------------------------------------------------------------------
+
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-# ---------------------------------------------------------------------------
+
 # Internal imports
-# ---------------------------------------------------------------------------
 from src.db.connection import db_connection
 from src.db import sql_repo as sqlrepo
 
 
-# ---------------------------------------------------------------------------
+
 # Table name discovery
-# ---------------------------------------------------------------------------
 def fetch_all_tbl_names():
     """
     Retrieve all table names from the target schema.
@@ -65,9 +61,8 @@ def fetch_all_tbl_names():
     # Return the table name list
     return table_name_list
 
-# ---------------------------------------------------------------------------
+
 # Table column names discovery
-# ---------------------------------------------------------------------------
 def fetch_db_schema_list():
     # Connect to database
     conn = db_connection()
@@ -91,9 +86,8 @@ def fetch_db_schema_list():
     return table_col_dict
 
 
-# ---------------------------------------------------------------------------
+
 # Schema metadata dump
-# ---------------------------------------------------------------------------
 def fetch_db_schema_DfOutput():
     """
     Retrieve all tables and their column metadata from the database.
@@ -126,9 +120,8 @@ def fetch_db_schema_DfOutput():
     return table_df_dict
 
 
-# ---------------------------------------------------------------------------
+
 # Full database dump
-# ---------------------------------------------------------------------------
 def dump_database_contents():
     """
     Dump the contents of all discovered tables.

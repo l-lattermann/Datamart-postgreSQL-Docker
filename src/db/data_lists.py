@@ -12,9 +12,8 @@ Provides:
 - calendar horizon
 """
 
-# ============================================================
+
 # META / GLOBAL SETTINGS
-# ============================================================
 import datetime
 
 # number of entries to create per table
@@ -54,10 +53,8 @@ payouts(id, host_account_id, payout_account_id, booking_id, amount_cents, curren
 notifications(id, account_id, payload, sent_at)
 """
 
-# ============================================================
-# GEO / ADDRESS DATA
-# ============================================================
 
+# GEO / ADDRESS DATA
 # city → postal code
 city_postal = {
     "snowflake village": "25DEC",
@@ -132,10 +129,8 @@ city_address_terms = {
     "winterberry woods": ["treehouse", "burrow"],
 }
 
-# ============================================================
-# PERSON / ACCOUNT SEEDS
-# ============================================================
 
+# PERSON / ACCOUNT SEEDS
 # first-name building blocks
 first_name_sylls = [
     "holly",
@@ -213,9 +208,8 @@ email_domains = [
     "festivebox.xyz",
 ]
 
-# ============================================================
+
 # ACCOMMODATION NAME GENERATION
-# ============================================================
 accomodation_title_words_dict = {
     # generic adjectives
     "adjectives_general": [
@@ -304,24 +298,21 @@ accomodation_title_words_dict = {
     ],
 }
 
-# ============================================================
+
 # IMAGE / MEDIA DATA
-# ============================================================
 image_mimes = [
     "image/jpeg",
     "image/png",
     "image/webp",
 ]
 
-# ============================================================
+
 # CALENDAR / AVAILABILITY
-# ============================================================
 # how many days ahead to generate calendar entries
 calendar_look_ahead = 365
 
-# ============================================================
+
 # CREDIT CARD BRANDS
-# ============================================================
 card_brands = [
     "Snowflake Express",
     "Frostcard",
@@ -333,9 +324,8 @@ card_brands = [
     "Mistletoe Money",
 ]
 
-# ============================================================
+
 # REVIEW SENTENCE BUILDING BLOCKS - CHRISTMAS CHAOS EDITION
-# ============================================================
 christmas_accommodation_reviews = {
     "openings": {
         # Positive (70%)

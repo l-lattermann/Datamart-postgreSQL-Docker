@@ -1,17 +1,12 @@
--- ============================================
 -- 01_schema.sql
 -- Schema definition derived from Data Description Table
--- ============================================
 
 -- ENUM TYPES
 CREATE TYPE role AS ENUM ('guest', 'host', 'admin');
 CREATE TYPE payment_method_type AS ENUM ('card', 'paypal');
 CREATE TYPE booking_status AS ENUM ('pending', 'confirmed', 'cancelled', 'completed');
 
--- ============================================
 -- CORE TABLES
--- ============================================
-
 CREATE TABLE accounts (
     id SERIAL PRIMARY KEY,
     email VARCHAR(255) NOT NULL UNIQUE,
@@ -36,10 +31,7 @@ CREATE TABLE addresses (
     country VARCHAR(100) NOT NULL
 );
 
--- ============================================
 -- ACCOMMODATIONS + RELATIONS
--- ============================================
-
 CREATE TABLE amenities (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL UNIQUE,
@@ -88,10 +80,7 @@ CREATE TABLE accommodation_calendar (
     PRIMARY KEY (accommodation_id, day)
 );
 
--- ============================================
 -- BOOKINGS + REVIEWS
--- ============================================
-
 CREATE TABLE payments (
     id SERIAL PRIMARY KEY,
     customer_id INT REFERENCES accounts(id),
@@ -126,10 +115,7 @@ CREATE TABLE review_images (
     PRIMARY KEY (review_id, image_id)
 );
 
--- ============================================
 -- MESSAGING SYSTEM
--- ============================================
-
 CREATE TABLE conversations (
     id SERIAL PRIMARY KEY,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -145,10 +131,7 @@ CREATE TABLE messages (
     is_read BOOLEAN DEFAULT FALSE
 );
 
--- ============================================
 -- PAYMENTS + METHODS
--- ============================================
-
 CREATE TABLE payment_methods (
     id SERIAL PRIMARY KEY,
     customer_id INT REFERENCES accounts(id),
@@ -175,10 +158,7 @@ CREATE TABLE paypal (
 ALTER TABLE payments
     ADD FOREIGN KEY (payment_method_id) REFERENCES payment_methods(id) ON DELETE SET NULL;
 
--- ============================================
 -- PAYOUTS + NOTIFICATIONS
--- ============================================
-
 CREATE TABLE payout_accounts (
     id SERIAL PRIMARY KEY,
     host_account_id INT REFERENCES accounts(id),
@@ -202,7 +182,3 @@ CREATE TABLE notifications (
     payload JSON,
     sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
--- ============================================
--- END OF SCHEMA
--- ============================================

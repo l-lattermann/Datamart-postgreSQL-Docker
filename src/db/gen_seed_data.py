@@ -17,9 +17,8 @@ Assumptions:
 - number of rows is controlled by seeds.num_gen_dummydata
 """
 
-# ---------------------------------------------------------------------------
+
 # Stdlib imports
-# ---------------------------------------------------------------------------
 from random import choice, choices, randint, shuffle, sample
 import datetime
 from pathlib import Path
@@ -29,23 +28,21 @@ from typing import List
 import string
 import json
 
-# ---------------------------------------------------------------------------
+
 # Third-party / extra imports
-# ---------------------------------------------------------------------------
 import rstr
 import pandas as pd
 
 
-# ---------------------------------------------------------------------------
+
 # Path/bootstrap
 # Go two levels up if needed (src/db → project root). Keep logic unchanged.
-# ---------------------------------------------------------------------------
+
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-# ---------------------------------------------------------------------------
+
 # Internal imports
-# ---------------------------------------------------------------------------
 import src.db.data_lists as seeds
 from src.db.connection import db_connection  # kept although not used in current funcs
 import src.db.sql_repo as sqlrepo
@@ -53,9 +50,8 @@ from src.db.utils.db_helpers import get_tbl_contents_as_str
 from src.utils.logger import logger
 
 
-# ---------------------------------------------------------------------------
+
 # HELPER FUNCTIONS
-# ---------------------------------------------------------------------------
 def _fetch_table_ids(tbl_name: str)-> List:
     # Open connection
     conn = db_connection()
@@ -127,9 +123,8 @@ def _gen_dummy_json():
     }
     return json.dumps(json_thing)
 
-# ---------------------------------------------------------------------------
+
 # ACCOUNTS
-# ---------------------------------------------------------------------------
 def gen_dummydata_accounts():
     """
     Fill dummy data for accounts table.
@@ -201,9 +196,8 @@ def gen_dummydata_accounts():
     # Return for later use
     return emails, first_names, last_names, roles, timestamps
 
-# ---------------------------------------------------------------------------
+
 # CREDENTIALS
-# ---------------------------------------------------------------------------
 def gen_dummydata_credentials():
     """
     Fill dummy data for credentials table.
@@ -251,9 +245,8 @@ def gen_dummydata_credentials():
     return password_hash, password_updated_at
 
 
-# ---------------------------------------------------------------------------
+
 # ADDRESSES
-# ---------------------------------------------------------------------------
 def gen_dummydata_addresses():
     """
     Fill dummy data for addresses table.
@@ -304,9 +297,8 @@ def gen_dummydata_addresses():
     return line1, line2, cities, postal_code, countries
 
 
-# ---------------------------------------------------------------------------
+
 # ACCOMMODATIONS
-# ---------------------------------------------------------------------------
 def gen_dummydata_accommodations():
     """
     Fill dummy data for accommodations table.
@@ -333,10 +325,7 @@ def gen_dummydata_accommodations():
     id_column_name = id_column_name[0][0] # Unpack list of tuples
 
     # Get ID's with ID colum name
-    query = sql.SQL(sqlrepo.FETCH_HOST_IDS).format(
-    col=sql.Identifier(id_column_name),
-    tbl=sql.Identifier('accounts')
-    )
+    query = sqlrepo.FETCH_HOST_IDS
     cur.execute(query)
     host_account_ids = cur.fetchall()
     host_account_ids = [item[0] for item in host_account_ids]  # Unpack list of tuples
@@ -388,9 +377,8 @@ def gen_dummydata_accommodations():
     return titles, price_cents, is_active, created_at
 
 
-# ---------------------------------------------------------------------------
+
 # IMAGES
-# ---------------------------------------------------------------------------
 def gen_dummydata_images():
     """
     Fill dummy data for images table.
@@ -434,9 +422,8 @@ def gen_dummydata_images():
 
     return mimes, storage_keys, created_at
 
-# ---------------------------------------------------------------------------
+
 # PAYMENT METHODS
-# ---------------------------------------------------------------------------
 def gen_dummydata_payment_methods():
     """
     Fill dummy data for payment_methods table.
@@ -703,7 +690,6 @@ def gen_dummydata_messages():
     logger.info("Sample data inserted into messages table:")
     logger.info(get_tbl_contents_as_str('messages'))
 
-
 def gen_dummydata_review_images():
     """
     Fill dummy data for review_images table.
@@ -799,7 +785,6 @@ def gen_dummydata_accommodation_images():
     logger.info("Sample data inserted into accommodation_images table:")
     logger.info(get_tbl_contents_as_str('accommodation_images'))
 
-
 def gen_dummydata_notifications():
     """
     Fill dummy data for notifications table.
@@ -835,18 +820,100 @@ def gen_dummydata_notifications():
     # Test and log
     logger.info("Sample data inserted into notifications table:")
     logger.info(get_tbl_contents_as_str('notifications'))
-"""
-CREATE TABLE notifications (
+
+def gen_dummydata_payout_accounts():
+    """
+    Fill dummy data for payout_accounts table.
+    """
+    # Insert data into SQL table
+    conn = db_connection()
+    cur = conn.cursor()
+
+    # Clear existing data
+    query = sql.SQL(sqlrepo.DROP_ALL_TABLE_DATA).format(sql.Identifier('payout_accounts'))
+    cur.execute(query)
+    
+    # Get account ids
+    query = sqlrepo.FETCH_HOST_IDS
+    cur.execute(query)
+    host_ids = cur.fetchall()
+
+    host_account_id = []
+    type = []
+    is_default = []
+
+    for id in host_ids:
+        host_account_id.append(id)
+        type.append(choice(['card', 'paypal']))
+        is_default.append(True)
+    shuffle(host_ids)
+    for id in host_ids[:int(len(host_ids)/3)]:
+        host_account_id.append(id)
+        type.append(choice(['card', 'paypal']))
+        is_default.append(False)
+
+
+    # Zip data 
+    data = zip(host_account_id, type, is_default)
+
+    # Finally insert the data
+    cur.executemany(sqlrepo.INSERT_PAYOUT_ACCOUNTS, data)
+    conn.commit()
+    conn.close()
+
+    # Test and log
+    logger.info("Sample data inserted into payout_accounts table:")
+    logger.info(get_tbl_contents_as_str('payout_accounts'))
+
+def gen_dummydata_payments():
+    """
+    Fill dummy data for payments table.
+    """
+    # Insert data into SQL table
+    conn = db_connection()
+    cur = conn.cursor()
+
+    # Clear existing data
+    query = sql.SQL(sqlrepo.DROP_ALL_TABLE_DATA).format(sql.Identifier('payout_accounts'))
+    cur.execute(query)
+    
+    # Get account ids
+    query = sqlrepo.FETCH_GUEST_IDS
+    cur.execute(query)
+    guest_ids = cur.fetchall()
+
+    customer_id = []
+    amount_cents = []
+    status = []
+    payment_method_id = []
+
+    # Zip data 
+    data = zip(host_account_id, type, is_default)
+
+    # Finally insert the data
+    cur.executemany(sqlrepo.INSERT_PAYOUT_ACCOUNTS, data)
+    conn.commit()
+    conn.close()
+
+    # Test and log
+    logger.info("Sample data inserted into payout_accounts table:")
+    logger.info(get_tbl_contents_as_str('payout_accounts'))
+    """
     id SERIAL PRIMARY KEY,
-    account_id INT REFERENCES accounts(id),
-    payload JSON,
-    sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-"""
-# ---------------------------------------------------------------------------
+    customer_id INT REFERENCES accounts(id),
+    amount_cents INT CHECK (amount_cents >= 0),
+    status VARCHAR(50),
+    payment_method_id INT
+    """
+
+def gen_dummydata_payouts():
+    """
+    Fill dummy data for payouts table.
+    """
+    pass
+
 # STUBS FOR REMAINING TABLES
 # Keep stubs to preserve structure. Implement later.
-# ---------------------------------------------------------------------------
 def gen_dummydata_accommodation_calendar():
     """
     Fill dummy data for accommodation_calendar table.
@@ -873,17 +940,8 @@ def gen_dummydata_bookings():
     """
     pass
 
-def gen_dummydata_payout_accounts():
-    """
-    Fill dummy data for payout_accounts table.
-    """
-    pass
 
-def gen_dummydata_payouts():
-    """
-    Fill dummy data for payouts table.
-    """
-    pass
+
 
 
 
@@ -907,6 +965,7 @@ gen_dummydata_messages()
 gen_dummydata_review_images()
 gen_dummydata_accommodation_images()
 gen_dummydata_notifications()
+gen_dummydata_payout_accounts()
 
 get_tbl_contents_as_str('accounts')
 get_tbl_contents_as_str('credentials')
@@ -922,6 +981,7 @@ get_tbl_contents_as_str('messages')
 get_tbl_contents_as_str('review_images')
 get_tbl_contents_as_str('accommodation_images')
 get_tbl_contents_as_str('notifications')
+get_tbl_contents_as_str('payout_accounts')
 
 conn = db_connection()
 cur = conn.cursor()

@@ -9,10 +9,8 @@ Principles:
 - For tables with auto-increment IDs, omit the id column in INSERTs.
 """
 
-# ============================================================================
-# 1. Introspection queries
-# ============================================================================
 
+# 1. Introspection queries
 FETCH_ALL_TABLE_NAMES = """
     SELECT DISTINCT table_name
     FROM information_schema.columns
@@ -46,18 +44,16 @@ DUMP_TABLE = """
     FROM {};
 """
 
-# ============================================================================
+
 # 2. Drop all data from a specific table
-# ============================================================================
 DROP_ALL_TABLE_DATA = """
     TRUNCATE TABLE {}     
     RESTART IDENTITY 
     CASCADE;
 """
 
-# ============================================================================
+
 # 2. Retrieve ID column name
-# ============================================================================
 FETCH_ID_COLUMN_NAME = """
     SELECT a.attname
     FROM pg_index i, pg_attribute a
@@ -67,26 +63,32 @@ FETCH_ID_COLUMN_NAME = """
     AND i.indisprimary;
 """
 
-# ============================================================================
+
 # 3. Retrieve ID's
-# ============================================================================
+
 FETCH_IDS = """
     SELECT {col}
     FROM {tbl}
     """
 
-# ============================================================================
+
 # 4. Retrieve host account ID's
-# ============================================================================
+
 FETCH_HOST_IDS = """
-    SELECT {col}
-    FROM {tbl}
+    SELECT id
+    FROM accounts
     WHERE role = 'host';
     """
 
-# ============================================================================
+FETCH_GUEST_IDS = """
+    SELECT id
+    FROM accounts
+    WHERE role = 'guest';
+    """
+
+
 # 5. Retrieve table ID's with where condition
-# ============================================================================
+
 FETCH_IDS_WHERE = """
     SELECT {col}
     FROM {tbl}
@@ -96,10 +98,8 @@ FETCH_IMG_ID_FROM_REVIEW_IMGS = """
     SELECT image_id
     FROM review_images
     """
-# ============================================================================
-# 6. Table-specific INSERT templates (without ID columns)
-# ============================================================================
 
+# 6. Table-specific INSERT templates (without ID columns)
 INSERT_PAYOUT_ACCOUNTS = """
     INSERT INTO payout_accounts (host_account_id, type, is_default)
     VALUES (%s, %s, %s);

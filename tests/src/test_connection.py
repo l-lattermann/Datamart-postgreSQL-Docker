@@ -9,16 +9,14 @@ Logic:
 - else → expect False
 """
 
-# ---------------------------------------------------------------------------
+
 # Stdlib imports
-# ---------------------------------------------------------------------------
 import subprocess
 import os
 import sys
 
-# ---------------------------------------------------------------------------
+
 # Internal imports
-# ---------------------------------------------------------------------------
 from src.db.connection import check_connection
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -26,9 +24,8 @@ sys.path.insert(0, ROOT)
 from src import config
 
 
-# ---------------------------------------------------------------------------
+
 # Test
-# ---------------------------------------------------------------------------
 def test_connection_test():
     """
     Verify check_connection() return value matches Docker/Colima runtime status.

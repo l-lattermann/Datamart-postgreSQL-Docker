@@ -13,23 +13,20 @@ Covers:
 Stubs for: calendar, payments, bookings, reviews, conversations, messages, payouts.
 """
 
-# ---------------------------------------------------------------------------
+
 # Stdlib imports
-# ---------------------------------------------------------------------------
 import datetime
 import re
 import logging
 
-# ---------------------------------------------------------------------------
+
 # Internal imports
-# ---------------------------------------------------------------------------
 import src.db.gen_seed_data as farmer
 import src.db.data_lists as seeds
 
 
-# ---------------------------------------------------------------------------
+
 # accounts
-# ---------------------------------------------------------------------------
 def test_gen_dummydata_accounts():
     """
     email:         count
@@ -67,9 +64,8 @@ def test_gen_dummydata_accounts():
         assert seeds.start_timestamp <= ts <= seeds.stop_timestamp
 
 
-# ---------------------------------------------------------------------------
+
 # credentials
-# ---------------------------------------------------------------------------
 def test_gen_dummydata_credentials():
     """
     password_hash:       count + length
@@ -102,9 +98,8 @@ def test_gen_dummydata_credentials():
         pass
 
 
-# ---------------------------------------------------------------------------
+
 # addresses
-# ---------------------------------------------------------------------------
 def test_gen_dummydata_addresses():
     """
     Verify generated address data.
@@ -130,9 +125,8 @@ def test_gen_dummydata_addresses():
         assert c in seeds.city_country.values()
 
 
-# ---------------------------------------------------------------------------
+
 # accommodations
-# ---------------------------------------------------------------------------
 def test_gen_dummydata_accommodations():
     """
     Verify generated accommodation data.
@@ -153,9 +147,8 @@ def test_gen_dummydata_accommodations():
     logging.info("")
 
 
-# ---------------------------------------------------------------------------
+
 # images
-# ---------------------------------------------------------------------------
 def test_gen_dummydata_images():
     """
     Verify generated image data.
@@ -184,9 +177,8 @@ def test_gen_dummydata_images():
         assert re.match(r"^images/[a-f0-9\-]{36}\.[a-z]{3,4}$", key)
 
 
-# ---------------------------------------------------------------------------
+
 # stubs for not-yet-implemented generators
-# ---------------------------------------------------------------------------
 def test_gen_dummydata_accommodation_calendar():
     pass
 
@@ -223,9 +215,8 @@ import pytest
 import src.db.gen_seed_data as gen
 
 
-# ---------------------------------------------------------------------------
+
 # PAYMENT METHODS
-# ---------------------------------------------------------------------------
 @patch("src.db.gen_seed_data.db_connection")
 @patch("src.db.gen_seed_data._fetch_table_ids")
 def test_gen_dummydata_payment_methods(fetch_ids_mock, conn_mock):
@@ -262,9 +253,8 @@ def test_gen_dummydata_payment_methods(fetch_ids_mock, conn_mock):
     mock_conn.close.assert_called_once()
 
 
-# ---------------------------------------------------------------------------
+
 # CREDIT CARDS
-# ---------------------------------------------------------------------------
 @patch("src.db.gen_seed_data.db_connection")
 @patch("src.db.gen_seed_data._fetch_table_ids_where")
 def test_gen_dummydata_credit_cards(fetch_ids_mock, conn_mock):
@@ -296,9 +286,8 @@ def test_gen_dummydata_credit_cards(fetch_ids_mock, conn_mock):
     mock_conn.close.assert_called_once()
 
 
-# ---------------------------------------------------------------------------
+
 # PAYPAL
-# ---------------------------------------------------------------------------
 @patch("src.db.gen_seed_data.db_connection")
 @patch("src.db.gen_seed_data._fetch_table_ids_where")
 def test_gen_dummydata_paypal(fetch_ids_mock, conn_mock):

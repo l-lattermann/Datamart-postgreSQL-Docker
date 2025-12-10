@@ -12,35 +12,31 @@ Assumptions:
 - src.utils.logger is a configured logger
 """
 
-# ---------------------------------------------------------------------------
+
 # Stdlib imports
-# ---------------------------------------------------------------------------
 import sys
 from pathlib import Path
 
-# ---------------------------------------------------------------------------
+
 # Third-party imports
-# ---------------------------------------------------------------------------
 import psycopg2
 from psycopg2 import OperationalError
 
-# ---------------------------------------------------------------------------
+
 # Path/bootstrap
 # Go two levels up (src/db → project root) so src.* imports work when run standalone.
-# ---------------------------------------------------------------------------
+
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-# ---------------------------------------------------------------------------
+
 # Internal imports
-# ---------------------------------------------------------------------------
 from src import config
 from src.utils.logger import logger
 
 
-# ---------------------------------------------------------------------------
+
 # Connection factory
-# ---------------------------------------------------------------------------
 def db_connection():
     """
     Return a psycopg2 connection using credentials from src.config.
@@ -54,9 +50,8 @@ def db_connection():
     )
 
 
-# ---------------------------------------------------------------------------
+
 # Connection test
-# ---------------------------------------------------------------------------
 def check_connection() -> bool:
     """
     Try to establish a connection and execute a simple test query (SELECT 1).

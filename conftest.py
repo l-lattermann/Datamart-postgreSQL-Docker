@@ -6,16 +6,14 @@ Creates logs/test.log and attaches a single file handler to the root logger.
 Prevents duplicate handlers on test reload.
 """
 
-# ---------------------------------------------------------------------------
+
 # Stdlib imports
-# ---------------------------------------------------------------------------
 import os
 import logging
 
 
-# ---------------------------------------------------------------------------
+
 # Pytest configuration
-# ---------------------------------------------------------------------------
 def pytest_configure(config):
     """
     Configure pytest logging to write all output into logs/test.log.
