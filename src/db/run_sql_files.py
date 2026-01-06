@@ -32,7 +32,7 @@ logger.info(f"Loading the following files to DB {FILES}")
 
 
 # helpers
-def run_sql_file(conn, path: Path):
+def _run_sql_file(conn, path: Path):
     """
     Execute the full contents of a .sql file in one cursor/transaction.
     Commits after successful execution.
@@ -44,14 +44,14 @@ def run_sql_file(conn, path: Path):
 
 
 # main routine
-def main():
+def run_sql_files():
     conn = db_connection()
     for fname in FILES:
         try:
-            run_sql_file(conn, SQL_DIR / fname)
+            _run_sql_file(conn, SQL_DIR / fname)
             logger.info(f"Ran {fname} without errors")
         except psycopg2.Error as e:
-            logger.info(e)
+            logger.exception(e)
     conn.close()
 
     # run schema introspection at the end
@@ -61,4 +61,4 @@ def main():
 
 # CLI entrypoint
 if __name__ == "__main__":
-    main()
+    run_sql_files()

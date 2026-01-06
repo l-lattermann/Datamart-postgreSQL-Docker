@@ -577,3 +577,29 @@ room_tags = [
     "chimney-friendly attic room",
     "cookie-baking laboratory (kitchen)"
 ]
+
+currencies = [
+    "EUR",
+    "USD",
+    "GBP",
+    "CHF",
+    "JPY",
+    "CNY",
+    "AUD",
+    "CAD",
+    "NZD",
+    "SEK",
+    "NOK",
+    "DKK",
+    "PLN",
+    "CZK",
+    "HUF",
+    "RON",
+    "BGN",
+    "HRK",
+    "TRY",
+    "ILS",
+    "INR",
+    "KRW",
+    "SGD"
+]

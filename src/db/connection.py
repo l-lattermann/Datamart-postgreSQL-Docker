@@ -11,24 +11,17 @@ Assumptions:
 - src.config defines DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_HOST_PORT
 - src.utils.logger is a configured logger
 """
-
-
 # Stdlib imports
 import sys
 from pathlib import Path
-
 
 # Third-party imports
 import psycopg2
 from psycopg2 import OperationalError
 
-
 # Path/bootstrap
-# Go two levels up (src/db → project root) so src.* imports work when run standalone.
-
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PROJECT_ROOT))
-
 
 # Internal imports
 from src import config

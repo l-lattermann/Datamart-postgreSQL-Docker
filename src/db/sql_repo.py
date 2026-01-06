@@ -114,13 +114,48 @@ FETCH_IMG_ID_FROM_REVIEW_IMGS = """
     SELECT image_id
     FROM review_images
 """
+
+
 # 6. Get Accomodation prices
 FETCH_ACCOMMODATION_PRICE = """
     SELECT price_cents
     FROM accommodations
     WHERE id = %s;
 """
-# 7. Table-specific INSERT templates (without ID columns)
+
+
+# 7. Get Payout related stuff
+GET_PAYOUT_RELEVANTS_FROM_BOOKINGS = """
+    SELECT id, accommodation_id, payment_id
+    FROM bookings;
+"""
+
+GET_HOST_ID_FROM_ACCOMMODATIONS = """
+    SELECT host_account_id
+    FROM accommodations
+    WHERE id = %s;
+"""
+
+GET_AMMOUNT_CENTS_WITH_PAYMENT_ID = """
+    SELECT amount_cents
+    FROM payments
+    WHERE id = %s;
+"""
+
+GET_PAYOUT_ACCOUNT_ID_WITH_HOST_ID = """
+    SELECT id
+    FROM payout_accounts
+    WHERE host_account_id = %s;
+"""
+
+# 8. Fetch booking dates for accommodation 
+FETCH_BOOKING_DATES = """
+    SELECT start_date, end_date
+    FROM bookings
+    WHERE accommodation_id = %s;
+"""
+
+# 9. Table-specific INSERT templates (without ID columns)
 INSERT_PAYOUT_ACCOUNTS = """
     INSERT INTO payout_accounts (host_account_id, type, is_default)
     VALUES (%s, %s, %s);
@@ -154,7 +189,7 @@ INSERT_ACCOMMODATION_CALENDAR = """
         accommodation_id,
         day,
         is_blocked,
-        price_cents,
+        price_addition_cents,
         min_nights
     )
     VALUES (%s, %s, %s, %s, %s);

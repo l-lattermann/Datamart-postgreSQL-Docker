@@ -39,7 +39,6 @@ from src.db.connection import db_connection
 import src.db.sql_repo as sqlrepo
 from src.db.utils.db_helpers import get_tbl_contents_as_str, get_tbl_contents_as_str_sorted_by
 from src.utils.logger import logger
-from src.db.utils import db_introspect
 
 
 
@@ -95,7 +94,6 @@ def _fetch_table_ids_where(tbl_name: str, where: str)-> List:
 
     return ids
 
-
 def _random_string(n=8):
     return "".join(choice(string.ascii_letters + string.digits) for _ in range(n))
 
@@ -120,9 +118,6 @@ def _gen_dummy_json():
 def gen_dummydata_accounts():
     """
     Fill dummy data for accounts table.
-
-    Returns:
-        email_addresses, first_names, last_names, roles, timestamps
     """
     # first names
     first_names = []
@@ -884,7 +879,7 @@ def gen_dummydata_payout_accounts():
 
     # Test and log
     logger.info("Sample data inserted into payout_accounts table:")
-    logger.info(get_tbl_contents_as_str('payout_accounts'))#
+    logger.info(get_tbl_contents_as_str('payout_accounts'))
 
 # 16 +17
 def gen_dummydata_bookings_and_payments():
@@ -1001,71 +996,196 @@ def gen_dummydata_payouts():
     """
     Fill dummy data for payouts table.
     """
-    pass
+    host_account_ids = []
+    payout_account_ids = []
+    booking_ids = []
+    amount_cents = []
+    currency = []
+    status = []
+
+    accommodation_ids = []
+    payment_ids = []
+
+    # Insert data into SQL table
+    conn = db_connection()
+    cur = conn.cursor()
+
+    # Clear existing data
+    query = sql.SQL(sqlrepo.DROP_ALL_TABLE_DATA).format(sql.Identifier('payouts'))
+    cur.execute(query)
+    
+    # Get booking id and accomodation id and amount cents from bookings
+    q = sqlrepo.GET_PAYOUT_RELEVANTS_FROM_BOOKINGS
+    cur.execute(q)
+    rows = cur.fetchall()
+    for booking_id_, accommodation_id_, payment_id_ in rows:
+        booking_ids.append(booking_id_)
+        accommodation_ids.append(accommodation_id_)
+        payment_ids.append(payment_id_)
+
+    # Get ammount cents from payments with payment id 
+    for id in payment_ids:
+        q = sqlrepo.GET_AMMOUNT_CENTS_WITH_PAYMENT_ID
+        cur.execute(q, (id,))
+        amount_cents_ = cur.fetchone()
+        amount_cents.append(amount_cents_[0])
+
+    # Get host id for accomodation id 
+    for id in accommodation_ids:
+        q = sqlrepo.GET_HOST_ID_FROM_ACCOMMODATIONS
+        cur.execute(q, (id,))
+        host_id = cur.fetchone()
+        host_account_ids.append(host_id[0])
+
+    # Get payout account id for host id 
+    for id in host_account_ids:
+        q = sqlrepo.GET_PAYOUT_ACCOUNT_ID_WITH_HOST_ID
+        cur.execute(q, (id,))
+        payout_acc_id = cur.fetchone()
+        payout_account_ids.append(payout_acc_id[0])
+    
+    # Select currencies
+    for _ in host_account_ids:
+        currency.append(choice(seeds.currencies))
+    
+    # Select status
+    for _ in currency:
+        payout_status = ['pending', 'confirmed', 'cancelled', 'completed']
+        status.append(choice(payout_status))
+
+    # Zip data 
+    data = zip(
+                host_account_ids,
+                payout_account_ids,
+                booking_ids,
+                amount_cents,
+                currency,
+                status
+            )
+
+    # Finally insert the data
+    cur.executemany(sqlrepo.INSERT_PAYOUTS, data)
+    conn.commit()
+    conn.close()
+
+    # Test and log
+    logger.info("Sample data inserted into payouts table:")
+    logger.info(get_tbl_contents_as_str('payouts'))
 
 # 19
 def gen_dummydata_accommodation_calendar():
     """
     Fill dummy data for accommodation_calendar table.
-
-    Returns:
-        day, is_blocked, price_cents, min_nights
     """
+    accommodation_id = []
     days = []
     is_blocked = []
-    price_cents = []
+    price_addition_cents = []
     min_nights = []
 
-    return days, is_blocked, price_cents, min_nights
+    # Insert data into SQL table
+    conn = db_connection()
+    cur = conn.cursor()
+
+    # Clear existing data
+    query = sql.SQL(sqlrepo.DROP_ALL_TABLE_DATA).format(sql.Identifier('accommodation_calendar'))
+    cur.execute(query)
+
+    # Get guest account ids
+    accommodation_ids = _fetch_table_ids('accommodations')
+
+    # Fill the calendar for every accommodation
+    day_counter = seeds.stop_timestamp - datetime.timedelta(days=0) # fill the calendar only for the last 1 days
+    while day_counter <= seeds.stop_timestamp:
+        for id in accommodation_ids:
+            # Get booking dates for accommodations
+            q = sqlrepo.FETCH_BOOKING_DATES
+            cur.execute(q, (id,))
+            start_end = cur.fetchone()
+            if start_end:
+                start_date = start_end[0]
+                end_date = start_end[1]
+            else:
+                start_date = seeds.start_timestamp - datetime.timedelta(days=1)
+                end_date = seeds.stop_timestamp - datetime.timedelta(days=1)
+            # Add accomodation id to calendar
+            accommodation_id.append(id)
+
+            # Add day timestamp to calendar
+            days.append(day_counter)
+
+            # Check if booked
+            if (day_counter >= start_date and day_counter <= end_date):
+                is_blocked.append(True)
+            else:
+                is_blocked.append(False)
+
+            # Generate random price addition
+            price_addition_cents.append(randint(-500,500))
+
+            # Generate min. nights required for booking
+            min_nights.append(randint(2,7))
+
+        # Increase the counter
+        day_counter += datetime.timedelta(days=1)
+
+    # Zip data 
+    data = zip(
+                accommodation_id,
+                days,
+                is_blocked,
+                price_addition_cents,
+                min_nights
+            )
+
+    # Finally insert the data
+    cur.executemany(sqlrepo.INSERT_ACCOMMODATION_CALENDAR, data)
+    conn.commit()
+    conn.close()
+
+    # Test and log
+    logger.info("Sample data inserted into accommodation_calendar table:")
+    logger.info(get_tbl_contents_as_str('accommodation_calendar'))
 
 # 20
 def gen_dummydata_accommodation_amenities():
-    pass
+    """
+    Fill dummy data for accommodation_amenities table.
+    """
+    accommodation_id = []
+    amenity_id = []
+    # Insert data into SQL table
+    conn = db_connection()
+    cur = conn.cursor()
 
+    # Clear existing data
+    query = sql.SQL(sqlrepo.DROP_ALL_TABLE_DATA).format(sql.Identifier('accommodation_amenities'))
+    cur.execute(query)
 
+    # Get a list of all amenities ids
+    amenities_ids = _fetch_table_ids('amenities')
 
-#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=
+    # Get guest account ids
+    accommodation_ids = _fetch_table_ids('accommodations')
 
+    for id in accommodation_ids:
+        count = randint(2,3)
+        amenities_rand_list = sample(amenities_ids, count)
+        for am in amenities_rand_list:
+            accommodation_id.append(id)
+            amenity_id.append(am)
 
+    # Zip data 
+    data = zip(
+                accommodation_id,
+                amenity_id
+            )
 
-gen_dummydata_accounts()
-gen_dummydata_credentials()
-gen_dummydata_addresses()
-gen_dummydata_accommodations()
-gen_dummydata_images()
-gen_dummydata_payment_methods()
-gen_dummydata_credit_cards()
-gen_dummydata_paypal()
-gen_dummydata_reviews()
-gen_dummydata_conversations()
-gen_dummydata_messages()
-gen_dummydata_review_images()
-gen_dummydata_accommodation_images()
-gen_dummydata_notifications()
-gen_dummydata_payout_accounts()
-gen_dummydata_bookings_and_payments()
+    # Finally insert the data
+    cur.executemany(sqlrepo.INSERT_ACCOMMODATION_AMENITIES, data)
+    conn.commit()
+    conn.close()
 
-
-# All tables
-[
-'notifications',
-'messages', 
-'payment_methods', 
-'accommodation_amenities', 
-'payout_accounts', 
-'paypal', 
-'addresses', 
-'accommodation_images', 
-'accommodations', 
-'credentials', 
-'payments', 
-'accounts', 
-'images',
-'accommodation_calendar', 
-'bookings', 
-'payouts', 
-'credit_cards', 
-'reviews', 
-'conversations', 
-'review_images'
-]
+    # Test and log
+    logger.info("Sample data inserted into accommodation_amenities table:")
+    logger.info(get_tbl_contents_as_str('accommodation_amenities'))

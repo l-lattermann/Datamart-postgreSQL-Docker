@@ -25,9 +25,6 @@ from src.db import sql_repo as sqlrepo
 def fetch_all_tbl_names():
     """
     Retrieve all table names from the target schema.
-
-    Uses a single query defined in sql_repo.FETCH_ALL_TABLE_NAMES and returns
-    a flattened, de-duplicated list of table names.
     """
     # Connect to database
     conn = db_connection()

@@ -84,19 +84,26 @@ CREATE TABLE accommodation_calendar (
     accommodation_id INT NOT NULL REFERENCES accommodations(id) ON DELETE CASCADE,
     day DATE NOT NULL,
     is_blocked BOOLEAN DEFAULT FALSE,
-    price_cents INT,
+    price_addition_cents INT,
     min_nights INT DEFAULT 1,
     PRIMARY KEY (accommodation_id, day)
 );
 
 -- BOOKINGS + REVIEWS
 -- 9
+CREATE TABLE payment_methods (
+    id SERIAL PRIMARY KEY,
+    customer_id INT REFERENCES accounts(id),
+    type payment_method_type NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE payments (
     id SERIAL PRIMARY KEY,
     customer_id INT REFERENCES accounts(id),
     amount_cents INT CHECK (amount_cents >= 0),
     status payment_status NOT NULL,
-    payment_method_id INT
+    payment_method_id INT NOT NULL REFERENCES payment_methods(id) ON DELETE SET NULL
 );
 
 -- 10
@@ -148,12 +155,7 @@ CREATE TABLE messages (
 
 -- PAYMENTS + METHODS
 -- 15
-CREATE TABLE payment_methods (
-    id SERIAL PRIMARY KEY,
-    customer_id INT REFERENCES accounts(id),
-    type payment_method_type NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+
 
 -- 16
 CREATE TABLE credit_cards (
@@ -173,12 +175,8 @@ CREATE TABLE paypal (
     email VARCHAR(255) UNIQUE NOT NULL
 );
 
--- 18
-ALTER TABLE payments
-    ADD FOREIGN KEY (payment_method_id) REFERENCES payment_methods(id) ON DELETE SET NULL;
-
 -- PAYOUTS + NOTIFICATIONS
--- 19
+-- 18
 CREATE TABLE payout_accounts (
     id SERIAL PRIMARY KEY,
     host_account_id INT REFERENCES accounts(id),
@@ -186,7 +184,7 @@ CREATE TABLE payout_accounts (
     is_default BOOLEAN DEFAULT FALSE
 );
 
--- 20
+-- 19
 CREATE TABLE payouts (
     id SERIAL PRIMARY KEY,
     host_account_id INT REFERENCES accounts(id),
@@ -197,7 +195,7 @@ CREATE TABLE payouts (
     status VARCHAR(50)
 );
 
--- 21
+-- 20
 CREATE TABLE notifications (
     id SERIAL PRIMARY KEY,
     account_id INT REFERENCES accounts(id),
