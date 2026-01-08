@@ -38,7 +38,7 @@ Core system goals:
 **IMPORTANT:** Execute steps in the correct order.
 ### 0. Install homebrew
 
-Install homebrew from their official website:
+Install homebrew from the official website:
 ```zsh
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
