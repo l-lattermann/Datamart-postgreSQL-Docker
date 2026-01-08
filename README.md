@@ -21,7 +21,7 @@ The database models the core Airbnb business logic:
 - Guests browse listings, make bookings, leave ratings, maintain profiles.
 - Airbnb processes payments: guests pay Airbnb; hosts receive payouts after check-in.
 - Both parties maintain reviews and trust-related information.
-- Payments include credit cards, PayPal, platform fees, and commissions.
+- Payments include credit cards and PayPal.
 
 Core system goals:
 - Store user profiles (hosts & guests)
@@ -36,7 +36,12 @@ Core system goals:
 ## 4. Setup & Execution
 
 **IMPORTANT:** Execute steps in the correct order.
+### 0. Install homebrew
 
+Install homebrew from their official website:
+```zsh
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
 ### Clone Repository
 
 Clone the project locally:
@@ -45,14 +50,14 @@ git clone https://github.com/l-lattermann/Datamart-postgreSQL-Docker-AWS.git
 cd Datamart-postgreSQL-Docker-AWS
 ```
 
-### Start Database (Docker + Colima)
+### 1. Start Database (Docker + Colima)
 Run:
 ```zsh
 ./scripts/docker_setup.sh
 ```
-This boots the PostgreSQL container and exposes the database locally.
+This downloads all required dependencies via homebrew and boots the PostgreSQL container and exposes the database locally.
 
-### Apply Schema and SQL Files
+### 2. Apply Schema and SQL Files
 Execute:
 ```zsh
 python -m src.db.gen_seed_data
@@ -77,8 +82,6 @@ pytest
 Tests include:
 - Connection tests  
 - Schema introspection  
-- Seed data generators (mocked DB)  
-- Utility logic  
 
 ## 6. Notes & Development Status
 This project is still in active development.  
