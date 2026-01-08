@@ -4,7 +4,7 @@ from psycopg2 import sql
 
 # Internal imports
 import src.db.utils.db_introspect as introspect
-from src.db.connection import db_connection  
+from src.db.connection import db_connection
 
 
 
@@ -14,29 +14,29 @@ def test_all_tables_filled():
 
     all_tables_true_list = [
         'notifications',
-        'messages', 
-        'payment_methods', 
-        'accommodation_amenities', 
-        'payout_accounts', 
-        'paypal', 
-        'addresses', 
-        'accommodation_images', 
-        'accommodations', 
-        'credentials', 
-        'payments', 
-        'accounts', 
+        'messages',
+        'payment_methods',
+        'accommodation_amenities',
+        'payout_accounts',
+        'paypal',
+        'addresses',
+        'accommodation_images',
+        'accommodations',
+        'credentials',
+        'payments',
+        'accounts',
         'images',
-        'accommodation_calendar', 
-        'bookings', 
-        'payouts', 
-        'credit_cards', 
-        'reviews', 
-        'conversations', 
+        'accommodation_calendar',
+        'bookings',
+        'payouts',
+        'credit_cards',
+        'reviews',
+        'conversations',
         'review_images',
         'amenities'
     ]
 
-    # Get all tables from shema
+    # Get all tables from schema
     all_tables_actual_list = introspect.fetch_all_tbl_names()
 
     try:
@@ -51,7 +51,7 @@ def test_all_tables_filled():
         con = db_connection()
         cur = con.cursor()
         q = sql.SQL("SELECT * FROM {}").format(
-        sql.Identifier(table)
+            sql.Identifier(table)
         )
         cur.execute(q)
         rows = cur.fetchall()
@@ -65,6 +65,7 @@ def test_all_tables_filled():
     con.close()
     logging.info("")
 
+
 def test_credentials():
     """Test if all credentials have accounts and vice versa"""
     logging.info("==== test_credentials =====")
@@ -72,7 +73,7 @@ def test_credentials():
     con = db_connection()
     cur = con.cursor()
 
-    # A) accounts without credentials
+    # accounts → credentials
     cur.execute("""
         SELECT a.id
         FROM accounts a
@@ -86,7 +87,7 @@ def test_credentials():
     except AssertionError:
         logging.exception(f"Accounts missing credentials: {[r[0] for r in missing]}")
 
-    # B) credentials without accounts (should be impossible with FK, but test anyway)
+    # credentials → accounts
     cur.execute("""
         SELECT c.account_id
         FROM credentials c
@@ -100,7 +101,7 @@ def test_credentials():
     except AssertionError:
         logging.exception(f"Orphan credentials rows: {[r[0] for r in orphans]}")
 
-    # C) counts match (1:1 expected because credentials.account_id is PK)
+    # Count verification (1:1 relationship)
     cur.execute("SELECT COUNT(*) FROM accounts;")
     n_accounts = cur.fetchone()[0]
     cur.execute("SELECT COUNT(*) FROM credentials;")
@@ -116,6 +117,7 @@ def test_credentials():
     cur.close()
     con.close()
 
+
 def test_addresses_and_accommodations_relationship():
     """Test if all accommodations have addresses and vice versa"""
     logging.info("==== test_addresses_and_accommodations_relationship =====")
@@ -123,7 +125,7 @@ def test_addresses_and_accommodations_relationship():
     con = db_connection()
     cur = con.cursor()
 
-    # A) addresses not referenced by any accommodation
+    # addresses → accommodations
     cur.execute("""
         SELECT ad.id
         FROM addresses ad
@@ -138,7 +140,7 @@ def test_addresses_and_accommodations_relationship():
     except AssertionError:
         logging.exception(f"Unused addresses: {[r[0] for r in unused_addresses]}")
 
-    # B) accommodations without address
+    # accommodations → addresses
     cur.execute("""
         SELECT id
         FROM accommodations
@@ -158,14 +160,15 @@ def test_addresses_and_accommodations_relationship():
     cur.close()
     con.close()
 
+
 def test_accommodation_images_fk_integrity():
-    """Test if all accommodations images have addresses and vice versa"""
+    """Test if all accommodation images have valid foreign keys"""
     logging.info("==== test_accommodation_images_fk_integrity =====")
 
     con = db_connection()
     cur = con.cursor()
 
-    # A) invalid accommodation_id
+    # accommodation_images → accommodations
     cur.execute("""
         SELECT ai.accommodation_id
         FROM accommodation_images ai
@@ -182,7 +185,7 @@ def test_accommodation_images_fk_integrity():
             f"Invalid accommodation_id in accommodation_images: {[r[0] for r in invalid_accommodations]}"
         )
 
-    # B) invalid image_id
+    # accommodation_images → images
     cur.execute("""
         SELECT ai.image_id
         FROM accommodation_images ai
@@ -203,13 +206,15 @@ def test_accommodation_images_fk_integrity():
     cur.close()
     con.close()
 
+
 def test_payment_methods_have_valid_customer():
-    """Test if all payment methods have valid account id"""
+    """Test if all payment methods have valid customer account id"""
     logging.info("==== test_payment_methods_have_valid_customer =====")
 
     con = db_connection()
     cur = con.cursor()
 
+    # payment_methods → accounts
     cur.execute("""
         SELECT pm.id, pm.customer_id
         FROM payment_methods pm
@@ -229,14 +234,15 @@ def test_payment_methods_have_valid_customer():
     cur.close()
     con.close()
 
+
 def test_payment_method_details_exclusive_and_complete():
-    """Test if all payment methods have valid cards or paypal"""
+    """Test if all payment methods have exactly one detail row (credit card or paypal)"""
     logging.info("==== test_payment_method_details_exclusive_and_complete =====")
 
     con = db_connection()
     cur = con.cursor()
 
-    # A) credit_cards orphan payment_method_id (should be impossible with FK, but test)
+    # credit_cards → payment_methods
     cur.execute("""
         SELECT cc.payment_method_id
         FROM credit_cards cc
@@ -250,7 +256,7 @@ def test_payment_method_details_exclusive_and_complete():
     except AssertionError:
         logging.exception(f"Orphan credit_cards.payment_method_id: {[r[0] for r in cc_orphans]}")
 
-    # B) paypal orphan payment_method_id (should be impossible with FK, but test)
+    # paypal → payment_methods
     cur.execute("""
         SELECT pp.payment_method_id
         FROM paypal pp
@@ -264,7 +270,7 @@ def test_payment_method_details_exclusive_and_complete():
     except AssertionError:
         logging.exception(f"Orphan paypal.payment_method_id: {[r[0] for r in pp_orphans]}")
 
-    # C) exactly one detail row per payment_method
+    # Verify exactly one detail row per payment_method (XOR)
     cur.execute("""
         SELECT
             pm.id,
@@ -291,8 +297,9 @@ def test_payment_method_details_exclusive_and_complete():
     cur.close()
     con.close()
 
+
 def test_reviews_and_review_images_integrity():
-    """Test if all review images have coorect image id and all reviews hace author"""
+    """Test if all review images have correct image id and all reviews have author"""
     logging.info("==== test_reviews_and_review_images_integrity =====")
 
     con = db_connection()
@@ -358,14 +365,15 @@ def test_reviews_and_review_images_integrity():
     cur.close()
     con.close()
 
+
 def test_messages_integrity():
-    """Test if all review images have coorect image id and all reviews hace author"""
+    """Test if all messages have valid sender, receiver and conversation"""
     logging.info("==== test_messages_integrity =====")
 
     con = db_connection()
     cur = con.cursor()
 
-    # sender exists
+    # messages → accounts (sender)
     cur.execute("""
         SELECT COUNT(*)
         FROM messages m
@@ -379,7 +387,7 @@ def test_messages_integrity():
     except AssertionError:
         logging.exception(f"Messages with invalid sender_id count: {n}")
 
-    # receiver exists
+    # messages → accounts (receiver)
     cur.execute("""
         SELECT COUNT(*)
         FROM messages m
@@ -393,7 +401,7 @@ def test_messages_integrity():
     except AssertionError:
         logging.exception(f"Messages with invalid receiver_id count: {n}")
 
-    # conversation exists
+    # messages → conversations
     cur.execute("""
         SELECT COUNT(*)
         FROM messages m
@@ -411,13 +419,15 @@ def test_messages_integrity():
     cur.close()
     con.close()
 
+
 def test_payout_accounts_integrity():
-    """Test FK integrity for payout_accounts"""
+    """Test if all payout accounts have valid host account id"""
     logging.info("==== test_payout_accounts_integrity =====")
 
     con = db_connection()
     cur = con.cursor()
 
+    # payout_accounts → accounts
     cur.execute("""
         SELECT COUNT(*)
         FROM payout_accounts pa
@@ -436,8 +446,9 @@ def test_payout_accounts_integrity():
     cur.close()
     con.close()
 
+
 def test_payouts_integrity():
-    """Test FK integrity for payouts"""
+    """Test if all payouts have valid foreign keys"""
     logging.info("==== test_payouts_integrity =====")
 
     con = db_connection()
@@ -492,13 +503,15 @@ def test_payouts_integrity():
     cur.close()
     con.close()
 
+
 def test_notifications_integrity():
-    """Test FK integrity for notifications"""
+    """Test if all notifications have valid account id"""
     logging.info("==== test_notifications_integrity =====")
 
     con = db_connection()
     cur = con.cursor()
 
+    # notifications → accounts
     cur.execute("""
         SELECT COUNT(*)
         FROM notifications n
@@ -517,8 +530,9 @@ def test_notifications_integrity():
     cur.close()
     con.close()
 
+
 def test_payments_integrity():
-    """Test FK integrity for payments"""
+    """Test if all payments have valid customer and payment method"""
     logging.info("==== test_payments_integrity =====")
 
     con = db_connection()
@@ -558,14 +572,15 @@ def test_payments_integrity():
     cur.close()
     con.close()
 
+
 def test_bookings_integrity():
-    """Test FK integrity for bookings"""
+    """Test if all bookings have valid guest, accommodation and payment"""
     logging.info("==== test_bookings_integrity =====")
 
     con = db_connection()
     cur = con.cursor()
 
-    # bookings → guest account
+    # bookings → accounts (guest)
     cur.execute("""
         SELECT COUNT(*)
         FROM bookings b
@@ -608,5 +623,6 @@ def test_bookings_integrity():
     except AssertionError:
         logging.exception(f"bookings with invalid payment_id count: {n}")
 
+    logging.info("")
     cur.close()
     con.close()
