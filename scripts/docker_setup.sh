@@ -2,11 +2,11 @@
 
 # SETUP: COLIMA + DOCKER + DB CONNECTIVITY CHECK
 # Purpose:
- install colima/docker/docker-compose (if missing)
- start or create Colima VM with given profile
- start Docker container from compose file
- clean orphaned pg volumes (optional)
- run Python DB connection test
+# install colima/docker/docker-compose (if missing)
+# start or create Colima VM with given profile
+# start Docker container from compose file
+# clean orphaned pg volumes (optional)
+# run Python DB connection test
 
 
 

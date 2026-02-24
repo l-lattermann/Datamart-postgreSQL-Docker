@@ -1,6 +1,8 @@
 # Stdlib imports
 import logging
 from psycopg2 import sql
+from datetime import datetime, date
+import pytest
 
 # Internal imports
 import src.db.utils.db_introspect as introspect
@@ -8,7 +10,19 @@ from src.db.connection import db_connection
 
 
 
-def test_all_tables_filled():
+@pytest.fixture(scope="function")
+def conn():
+    connection = db_connection()
+    connection.autocommit = False
+
+    try:
+        yield connection
+    finally:
+        connection.rollback()
+        connection.close()
+
+# === INTEGRITY TESTS ===
+def test_all_tables_filled(conn):
     """Test if all tables are populated"""
     logging.info("==== test_all_tables_filled =====")
 
@@ -48,8 +62,8 @@ def test_all_tables_filled():
     logging.info("")
 
     for table in all_tables_true_list:
-        con = db_connection()
-        cur = con.cursor()
+        
+        cur = conn.cursor()
         q = sql.SQL("SELECT * FROM {}").format(
             sql.Identifier(table)
         )
@@ -61,17 +75,12 @@ def test_all_tables_filled():
         except AssertionError:
             logging.exception(f">{table}< has less than 20 or no entities.")
 
-    cur.close()
-    con.close()
     logging.info("")
 
-
-def test_credentials():
+def test_credentials(conn):
     """Test if all credentials have accounts and vice versa"""
     logging.info("==== test_credentials =====")
-
-    con = db_connection()
-    cur = con.cursor()
+    cur = conn.cursor()
 
     # accounts → credentials
     cur.execute("""
@@ -114,16 +123,11 @@ def test_credentials():
         logging.exception(f"Count mismatch: accounts={n_accounts}, credentials={n_credentials}")
 
     logging.info("")
-    cur.close()
-    con.close()
 
-
-def test_addresses_and_accommodations_relationship():
+def test_addresses_and_accommodations_relationship(conn):
     """Test if all accommodations have addresses and vice versa"""
     logging.info("==== test_addresses_and_accommodations_relationship =====")
-
-    con = db_connection()
-    cur = con.cursor()
+    cur = conn.cursor()
 
     # addresses → accommodations
     cur.execute("""
@@ -157,16 +161,11 @@ def test_addresses_and_accommodations_relationship():
         )
 
     logging.info("")
-    cur.close()
-    con.close()
 
-
-def test_accommodation_images_fk_integrity():
+def test_accommodation_images_fk_integrity(conn):
     """Test if all accommodation images have valid foreign keys"""
     logging.info("==== test_accommodation_images_fk_integrity =====")
-
-    con = db_connection()
-    cur = con.cursor()
+    cur = conn.cursor()
 
     # accommodation_images → accommodations
     cur.execute("""
@@ -203,16 +202,11 @@ def test_accommodation_images_fk_integrity():
         )
 
     logging.info("")
-    cur.close()
-    con.close()
 
-
-def test_payment_methods_have_valid_customer():
+def test_payment_methods_have_valid_customer(conn):
     """Test if all payment methods have valid customer account id"""
     logging.info("==== test_payment_methods_have_valid_customer =====")
-
-    con = db_connection()
-    cur = con.cursor()
+    cur = conn.cursor()
 
     # payment_methods → accounts
     cur.execute("""
@@ -231,16 +225,11 @@ def test_payment_methods_have_valid_customer():
         logging.exception(f"Payment methods with invalid customer_id: {invalid}")
 
     logging.info("")
-    cur.close()
-    con.close()
 
-
-def test_payment_method_details_exclusive_and_complete():
+def test_payment_method_details_exclusive_and_complete(conn):
     """Test if all payment methods have exactly one detail row (credit card or paypal)"""
     logging.info("==== test_payment_method_details_exclusive_and_complete =====")
-
-    con = db_connection()
-    cur = con.cursor()
+    cur = conn.cursor()
 
     # credit_cards → payment_methods
     cur.execute("""
@@ -294,16 +283,11 @@ def test_payment_method_details_exclusive_and_complete():
         )
 
     logging.info("")
-    cur.close()
-    con.close()
 
-
-def test_reviews_and_review_images_integrity():
+def test_reviews_and_review_images_integrity(conn):
     """Test if all review images have correct image id and all reviews have author"""
     logging.info("==== test_reviews_and_review_images_integrity =====")
-
-    con = db_connection()
-    cur = con.cursor()
+    cur = conn.cursor()
 
     # reviews → accommodations
     cur.execute("""
@@ -362,16 +346,11 @@ def test_reviews_and_review_images_integrity():
         logging.exception(f"review_images with invalid image_id count: {n}")
 
     logging.info("")
-    cur.close()
-    con.close()
 
-
-def test_messages_integrity():
+def test_messages_integrity(conn):
     """Test if all messages have valid sender, receiver and conversation"""
     logging.info("==== test_messages_integrity =====")
-
-    con = db_connection()
-    cur = con.cursor()
+    cur = conn.cursor()
 
     # messages → accounts (sender)
     cur.execute("""
@@ -416,16 +395,11 @@ def test_messages_integrity():
         logging.exception(f"Messages with invalid conversation_id count: {n}")
 
     logging.info("")
-    cur.close()
-    con.close()
 
-
-def test_payout_accounts_integrity():
+def test_payout_accounts_integrity(conn):
     """Test if all payout accounts have valid host account id"""
     logging.info("==== test_payout_accounts_integrity =====")
-
-    con = db_connection()
-    cur = con.cursor()
+    cur = conn.cursor()
 
     # payout_accounts → accounts
     cur.execute("""
@@ -443,16 +417,11 @@ def test_payout_accounts_integrity():
         logging.exception(f"payout_accounts with invalid host_account_id count: {n}")
 
     logging.info("")
-    cur.close()
-    con.close()
 
-
-def test_payouts_integrity():
+def test_payouts_integrity(conn):
     """Test if all payouts have valid foreign keys"""
     logging.info("==== test_payouts_integrity =====")
-
-    con = db_connection()
-    cur = con.cursor()
+    cur = conn.cursor()
 
     # payouts → accounts
     cur.execute("""
@@ -500,16 +469,11 @@ def test_payouts_integrity():
         logging.exception(f"payouts with invalid booking_id count: {n}")
 
     logging.info("")
-    cur.close()
-    con.close()
 
-
-def test_notifications_integrity():
+def test_notifications_integrity(conn):
     """Test if all notifications have valid account id"""
     logging.info("==== test_notifications_integrity =====")
-
-    con = db_connection()
-    cur = con.cursor()
+    cur = conn.cursor()
 
     # notifications → accounts
     cur.execute("""
@@ -527,16 +491,11 @@ def test_notifications_integrity():
         logging.exception(f"notifications with invalid account_id count: {n}")
 
     logging.info("")
-    cur.close()
-    con.close()
 
-
-def test_payments_integrity():
+def test_payments_integrity(conn):
     """Test if all payments have valid customer and payment method"""
     logging.info("==== test_payments_integrity =====")
-
-    con = db_connection()
-    cur = con.cursor()
+    cur = conn.cursor()
 
     # payments → accounts
     cur.execute("""
@@ -569,16 +528,11 @@ def test_payments_integrity():
         logging.exception(f"payments with invalid payment_method_id count: {n}")
 
     logging.info("")
-    cur.close()
-    con.close()
 
-
-def test_bookings_integrity():
+def test_bookings_integrity(conn):
     """Test if all bookings have valid guest, accommodation and payment"""
     logging.info("==== test_bookings_integrity =====")
-
-    con = db_connection()
-    cur = con.cursor()
+    cur = conn.cursor()
 
     # bookings → accounts (guest)
     cur.execute("""
@@ -624,5 +578,208 @@ def test_bookings_integrity():
         logging.exception(f"bookings with invalid payment_id count: {n}")
 
     logging.info("")
-    cur.close()
-    con.close()
+
+
+# === FAULTY DATA INSERTION TESTS ===
+def test_accounts(conn):
+    
+    cur = conn.cursor()
+    cur.execute("INSERT INTO accounts (email) VALUES ('a@test.com')")
+    with pytest.raises(Exception):
+        cur.execute("INSERT INTO accounts (email) VALUES ('a@test.com')")
+
+def test_credentials(conn):
+    
+    cur = conn.cursor()
+    cur.execute("INSERT INTO accounts (email) VALUES ('cred@test.com') RETURNING id")
+    acc_id = cur.fetchone()[0]
+    cur.execute("INSERT INTO credentials (account_id, password_hash) VALUES (%s, 'hash')", (acc_id,))
+    with pytest.raises(Exception):
+        cur.execute("INSERT INTO credentials (account_id, password_hash) VALUES (9999, 'fail')")
+
+def test_addresses(conn):
+    
+    cur = conn.cursor()
+    cur.execute("INSERT INTO addresses (line1, city, country) VALUES ('L1','Berlin','DE')")
+    with pytest.raises(Exception):
+        cur.execute("INSERT INTO addresses (city, country) VALUES ('Berlin','DE')")
+
+def test_amenities(conn):
+    
+    cur = conn.cursor()
+    cur.execute("INSERT INTO amenities (name) VALUES ('WiFi')")
+    with pytest.raises(Exception):
+        cur.execute("INSERT INTO amenities (name) VALUES ('WiFi')")
+
+def test_accommodations(conn):
+    
+    cur = conn.cursor()
+    cur.execute("INSERT INTO accounts (email, role) VALUES ('host@test.com','host') RETURNING id")
+    host_id = cur.fetchone()[0]
+    cur.execute("INSERT INTO accommodations (host_account_id, title, price_cents) VALUES (%s,'Test',1000)", (host_id,))
+    with pytest.raises(Exception):
+        cur.execute("INSERT INTO accommodations (host_account_id, title, price_cents) VALUES (%s,'Bad',-1)", (host_id,))
+
+def test_accommodation_amenities(conn):
+    
+    cur = conn.cursor()
+    cur.execute("INSERT INTO accounts (email) VALUES ('h2@test.com') RETURNING id")
+    host_id = cur.fetchone()[0]
+    cur.execute("INSERT INTO accommodations (host_account_id,title,price_cents) VALUES (%s,'A',100)", (host_id,))
+    cur.execute("INSERT INTO amenities (name) VALUES ('Kitchen') RETURNING id")
+    amenity_id = cur.fetchone()[0]
+    cur.execute("SELECT id FROM accommodations WHERE title='A'")
+    acc_id = cur.fetchone()[0]
+    cur.execute("INSERT INTO accommodation_amenities VALUES (%s,%s)", (acc_id, amenity_id))
+    with pytest.raises(Exception):
+        cur.execute("INSERT INTO accommodation_amenities VALUES (%s,%s)", (acc_id, amenity_id))
+
+def test_images(conn):
+    
+    cur = conn.cursor()
+    cur.execute("INSERT INTO images (mime, storage_key) VALUES ('img','key1')")
+    with pytest.raises(Exception):
+        cur.execute("INSERT INTO images (mime, storage_key) VALUES ('img','key1')")
+
+def test_accommodation_images(conn):
+    
+    cur = conn.cursor()
+    cur.execute("INSERT INTO accounts (email) VALUES ('h3@test.com') RETURNING id")
+    host_id = cur.fetchone()[0]
+    cur.execute("INSERT INTO accommodations (host_account_id,title,price_cents) VALUES (%s,'B',100)", (host_id,))
+    cur.execute("INSERT INTO images (mime, storage_key) VALUES ('img','key2') RETURNING id")
+    img_id = cur.fetchone()[0]
+    cur.execute("SELECT id FROM accommodations WHERE title='B'")
+    acc_id = cur.fetchone()[0]
+    cur.execute("INSERT INTO accommodation_images VALUES (%s,%s,1,TRUE,'c','room')", (acc_id, img_id))
+
+def test_accommodation_calendar(conn):
+    
+    cur = conn.cursor()
+    cur.execute("INSERT INTO accounts (email) VALUES ('h4@test.com') RETURNING id")
+    host_id = cur.fetchone()[0]
+    cur.execute("INSERT INTO accommodations (host_account_id,title,price_cents) VALUES (%s,'C',100)", (host_id,))
+    cur.execute("SELECT id FROM accommodations WHERE title='C'")
+    acc_id = cur.fetchone()[0]
+    cur.execute("INSERT INTO accommodation_calendar VALUES (%s,%s,FALSE,0,1)", (acc_id, date.today()))
+    with pytest.raises(Exception):
+        cur.execute("INSERT INTO accommodation_calendar VALUES (%s,%s,FALSE,0,1)", (acc_id, date.today()))
+
+def test_payment_methods(conn):
+    
+    cur = conn.cursor()
+    cur.execute("INSERT INTO accounts (email) VALUES ('pay@test.com') RETURNING id")
+    acc_id = cur.fetchone()[0]
+    cur.execute("INSERT INTO payment_methods (customer_id,type) VALUES (%s,'card')", (acc_id,))
+
+def test_payments(conn):
+    
+    cur = conn.cursor()
+    cur.execute("INSERT INTO accounts (email) VALUES ('p2@test.com') RETURNING id")
+    acc_id = cur.fetchone()[0]
+    cur.execute("INSERT INTO payment_methods (customer_id,type) VALUES (%s,'card') RETURNING id", (acc_id,))
+    pm_id = cur.fetchone()[0]
+    cur.execute("INSERT INTO payments (customer_id,amount_cents,status,payment_method_id) VALUES (%s,100,'open',%s)", (acc_id, pm_id))
+    with pytest.raises(Exception):
+        cur.execute("INSERT INTO payments (customer_id,amount_cents,status,payment_method_id) VALUES (%s,-1,'open',%s)", (acc_id, pm_id))
+
+def test_bookings(conn):
+    
+    cur = conn.cursor()
+    cur.execute("INSERT INTO accounts (email) VALUES ('g@test.com') RETURNING id")
+    guest = cur.fetchone()[0]
+    cur.execute("INSERT INTO accounts (email) VALUES ('h5@test.com') RETURNING id")
+    host = cur.fetchone()[0]
+    cur.execute("INSERT INTO accommodations (host_account_id,title,price_cents) VALUES (%s,'D',100)", (host,))
+    cur.execute("SELECT id FROM accommodations WHERE title='D'")
+    acc_id = cur.fetchone()[0]
+    cur.execute("INSERT INTO bookings (guest_account_id,accommodation_id,start_date,end_date) VALUES (%s,%s,%s,%s)", (guest, acc_id, datetime.now(), datetime.now()))
+
+def test_reviews(conn):
+    
+    cur = conn.cursor()
+    cur.execute("INSERT INTO accounts (email) VALUES ('rev@test.com') RETURNING id")
+    user = cur.fetchone()[0]
+    cur.execute("INSERT INTO accounts (email) VALUES ('h6@test.com') RETURNING id")
+    host = cur.fetchone()[0]
+    cur.execute("INSERT INTO accommodations (host_account_id,title,price_cents) VALUES (%s,'E',100)", (host,))
+    cur.execute("SELECT id FROM accommodations WHERE title='E'")
+    acc_id = cur.fetchone()[0]
+    cur.execute("INSERT INTO reviews (accommodation_id,author_account_id,rating) VALUES (%s,%s,5)", (acc_id, user))
+    with pytest.raises(Exception):
+        cur.execute("INSERT INTO reviews (accommodation_id,author_account_id,rating) VALUES (%s,%s,6)", (acc_id, user))
+
+def test_review_images(conn):
+    
+    cur = conn.cursor()
+    cur.execute("INSERT INTO images (mime, storage_key) VALUES ('img','key3') RETURNING id")
+    img_id = cur.fetchone()[0]
+    cur.execute("INSERT INTO accounts (email) VALUES ('r2@test.com') RETURNING id")
+    user = cur.fetchone()[0]
+    cur.execute("INSERT INTO accounts (email) VALUES ('h7@test.com') RETURNING id")
+    host = cur.fetchone()[0]
+    cur.execute("INSERT INTO accommodations (host_account_id,title,price_cents) VALUES (%s,'F',100)", (host,))
+    cur.execute("SELECT id FROM accommodations WHERE title='F'")
+    acc_id = cur.fetchone()[0]
+    cur.execute("INSERT INTO reviews (accommodation_id,author_account_id,rating) VALUES (%s,%s,4) RETURNING id", (acc_id, user))
+    review_id = cur.fetchone()[0]
+    cur.execute("INSERT INTO review_images VALUES (%s,%s)", (review_id, img_id))
+
+def test_conversations(conn):
+    
+    cur = conn.cursor()
+    cur.execute("INSERT INTO conversations DEFAULT VALUES")
+
+def test_messages(conn):
+    
+    cur = conn.cursor()
+    cur.execute("INSERT INTO accounts (email) VALUES ('s@test.com') RETURNING id")
+    sender = cur.fetchone()[0]
+    cur.execute("INSERT INTO accounts (email) VALUES ('r@test.com') RETURNING id")
+    receiver = cur.fetchone()[0]
+    cur.execute("INSERT INTO conversations DEFAULT VALUES RETURNING id")
+    conv = cur.fetchone()[0]
+    cur.execute("INSERT INTO messages (sender_id,receiver_id,conversation_id,body) VALUES (%s,%s,%s,'hi')", (sender, receiver, conv))
+
+def test_credit_cards(conn):
+    
+    cur = conn.cursor()
+    cur.execute("INSERT INTO accounts (email) VALUES ('cc@test.com') RETURNING id")
+    acc = cur.fetchone()[0]
+    cur.execute("INSERT INTO payment_methods (customer_id,type) VALUES (%s,'card') RETURNING id", (acc,))
+    pm = cur.fetchone()[0]
+    cur.execute("INSERT INTO credit_cards (payment_method_id,exp_month) VALUES (%s,12)", (pm,))
+    with pytest.raises(Exception):
+        cur.execute("INSERT INTO credit_cards (payment_method_id,exp_month) VALUES (%s,13)", (pm,))
+
+def test_paypal(conn):
+    
+    cur = conn.cursor()
+    cur.execute("INSERT INTO accounts (email) VALUES ('pp@test.com') RETURNING id")
+    acc = cur.fetchone()[0]
+    cur.execute("INSERT INTO payment_methods (customer_id,type) VALUES (%s,'paypal') RETURNING id", (acc,))
+    pm = cur.fetchone()[0]
+    cur.execute("INSERT INTO paypal (payment_method_id,paypal_user_id,email) VALUES (%s,'u1','e1@test.com')", (pm,))
+
+def test_payout_accounts(conn):
+    
+    cur = conn.cursor()
+    cur.execute("INSERT INTO accounts (email) VALUES ('host8@test.com') RETURNING id")
+    host = cur.fetchone()[0]
+    cur.execute("INSERT INTO payout_accounts (host_account_id,type) VALUES (%s,'card')", (host,))
+
+def test_payouts(conn):
+    
+    cur = conn.cursor()
+    cur.execute("INSERT INTO accounts (email) VALUES ('host9@test.com') RETURNING id")
+    host = cur.fetchone()[0]
+    cur.execute("INSERT INTO payout_accounts (host_account_id,type) VALUES (%s,'card') RETURNING id", (host,))
+    payout_acc = cur.fetchone()[0]
+    cur.execute("INSERT INTO payouts (host_account_id,payout_account_id,amount_cents) VALUES (%s,%s,1000)", (host, payout_acc))
+
+def test_notifications(conn):
+    
+    cur = conn.cursor()
+    cur.execute("INSERT INTO accounts (email) VALUES ('notif@test.com') RETURNING id")
+    acc = cur.fetchone()[0]
+    cur.execute("INSERT INTO notifications (account_id,payload) VALUES (%s,'{\"type\":\"test\"}')", (acc,))
