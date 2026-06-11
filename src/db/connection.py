@@ -27,8 +27,6 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from src import config
 from src.utils.logger import logger
 
-
-
 # Connection factory
 def db_connection():
     """
@@ -41,8 +39,6 @@ def db_connection():
         host=config.DB_HOST,
         port=config.DB_HOST_PORT,
     )
-
-
 
 # Connection test
 def check_connection() -> bool:

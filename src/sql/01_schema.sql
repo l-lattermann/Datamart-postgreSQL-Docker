@@ -35,14 +35,14 @@ CREATE TABLE addresses (
     country VARCHAR(100) NOT NULL
 );
 
--- ACCOMMODATIONS + RELATIONS
+-- 4
 CREATE TABLE amenities (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL UNIQUE,
     category VARCHAR(50)
 );
 
--- 4
+-- 5
 CREATE TABLE accommodations (
     id SERIAL PRIMARY KEY,
     host_account_id INT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
@@ -53,7 +53,7 @@ CREATE TABLE accommodations (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 5
+-- 6
 CREATE TABLE accommodation_amenities (
     accommodation_id INT NOT NULL REFERENCES accommodations(id) ON DELETE CASCADE,
     amenity_id INT NOT NULL REFERENCES amenities(id) ON DELETE CASCADE,
@@ -154,9 +154,6 @@ CREATE TABLE messages (
 );
 
 -- PAYMENTS + METHODS
--- 15
-
-
 -- 16
 CREATE TABLE credit_cards (
     id SERIAL PRIMARY KEY,
