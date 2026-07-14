@@ -1,17 +1,7 @@
 #!/bin/zsh
 
-# TEARDOWN: COLIMA + DOCKER
-# Purpose:
- load .env to get profile/container/volume names
- stop and remove Docker containers/volumes
- stop and delete Colima VM
- log everything to logs/app.log
-
-
-
 # unified logging (stdout + stderr)
 exec > >(tee -a logs/app.log) 2>&1
-
 
 # 1) CONFIGURATION
 set -e

@@ -16,6 +16,7 @@ __pycache__/
 *$py.class
 *.pyo
 .pytest_cache/
+*.ruff_cache
 
 
 # OS and editor files
@@ -27,11 +28,6 @@ __pycache__/
 # Project-specific artifacts
 tree.txt
 src/sql/01_schema.txt
-
-
-# Logs and runtime output
-logs/
-*.log
 
 
 # Trashbin

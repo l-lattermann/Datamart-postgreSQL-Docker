@@ -60,7 +60,7 @@ CREATE TABLE accommodation_amenities (
     PRIMARY KEY (accommodation_id, amenity_id)
 );
 
--- 6
+-- 7
 CREATE TABLE images (
     id SERIAL PRIMARY KEY,
     mime VARCHAR(100) NOT NULL,
@@ -68,7 +68,7 @@ CREATE TABLE images (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 7
+-- 8
 CREATE TABLE accommodation_images (
     accommodation_id INT NOT NULL REFERENCES accommodations(id) ON DELETE CASCADE,
     image_id INT NOT NULL REFERENCES images(id) ON DELETE CASCADE,
@@ -79,7 +79,7 @@ CREATE TABLE accommodation_images (
     PRIMARY KEY (accommodation_id, image_id)
 );
 
--- 8
+-- 9
 CREATE TABLE accommodation_calendar (
     accommodation_id INT NOT NULL REFERENCES accommodations(id) ON DELETE CASCADE,
     day DATE NOT NULL,
@@ -90,7 +90,7 @@ CREATE TABLE accommodation_calendar (
 );
 
 -- BOOKINGS + REVIEWS
--- 9
+-- 10
 CREATE TABLE payment_methods (
     id SERIAL PRIMARY KEY,
     customer_id INT REFERENCES accounts(id),
@@ -98,15 +98,16 @@ CREATE TABLE payment_methods (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 11
 CREATE TABLE payments (
     id SERIAL PRIMARY KEY,
     customer_id INT REFERENCES accounts(id),
     amount_cents INT CHECK (amount_cents >= 0),
     status payment_status NOT NULL,
-    payment_method_id INT NOT NULL REFERENCES payment_methods(id) ON DELETE SET NULL
+    payment_method_id INT NOT NULL REFERENCES payment_methods(id) ON DELETE RESTRICT
 );
 
--- 10
+-- 12
 CREATE TABLE bookings (
     id SERIAL PRIMARY KEY,
     guest_account_id INT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
@@ -118,7 +119,7 @@ CREATE TABLE bookings (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 11
+-- 13
 CREATE TABLE reviews (
     id SERIAL PRIMARY KEY,
     accommodation_id INT NOT NULL REFERENCES accommodations(id) ON DELETE CASCADE,
@@ -128,7 +129,7 @@ CREATE TABLE reviews (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 12
+-- 14
 CREATE TABLE review_images (
     review_id INT NOT NULL REFERENCES reviews(id) ON DELETE CASCADE,
     image_id INT NOT NULL REFERENCES images(id) ON DELETE CASCADE,
@@ -136,13 +137,13 @@ CREATE TABLE review_images (
 );
 
 -- MESSAGING SYSTEM
--- 13
+-- 15
 CREATE TABLE conversations (
     id SERIAL PRIMARY KEY,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 14
+-- 16
 CREATE TABLE messages (
     id SERIAL PRIMARY KEY,
     sender_id INT REFERENCES accounts(id) ON DELETE CASCADE,
@@ -154,7 +155,7 @@ CREATE TABLE messages (
 );
 
 -- PAYMENTS + METHODS
--- 16
+-- 17
 CREATE TABLE credit_cards (
     id SERIAL PRIMARY KEY,
     payment_method_id INT UNIQUE REFERENCES payment_methods(id) ON DELETE CASCADE,
@@ -164,7 +165,7 @@ CREATE TABLE credit_cards (
     exp_year INT
 );
 
--- 17
+-- 18
 CREATE TABLE paypal (
     id SERIAL PRIMARY KEY,
     payment_method_id INT UNIQUE REFERENCES payment_methods(id) ON DELETE CASCADE,
@@ -173,7 +174,7 @@ CREATE TABLE paypal (
 );
 
 -- PAYOUTS + NOTIFICATIONS
--- 18
+-- 19
 CREATE TABLE payout_accounts (
     id SERIAL PRIMARY KEY,
     host_account_id INT REFERENCES accounts(id),
@@ -181,7 +182,7 @@ CREATE TABLE payout_accounts (
     is_default BOOLEAN DEFAULT FALSE
 );
 
--- 19
+-- 20
 CREATE TABLE payouts (
     id SERIAL PRIMARY KEY,
     host_account_id INT REFERENCES accounts(id),
@@ -192,10 +193,86 @@ CREATE TABLE payouts (
     status VARCHAR(50)
 );
 
--- 20
+-- 21
 CREATE TABLE notifications (
     id SERIAL PRIMARY KEY,
     account_id INT REFERENCES accounts(id),
     payload JSON,
     sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+
+-- Indices
+CREATE INDEX idx_credentials_account_id -- Faster account-credential joins
+    ON credentials(account_id);
+
+CREATE INDEX idx_accommodations_host    -- Faster host accommodation lookup
+    ON accommodations(host_account_id);
+
+CREATE INDEX idx_accommodations_address -- Faster address joins
+    ON accommodations(address_id);
+
+CREATE INDEX idx_payment_methods_customer   -- Faster customer payment method lookup
+    ON payment_methods(customer_id);
+
+CREATE INDEX idx_payments_customer  -- Faster customer payment lookup
+    ON payments(customer_id);
+
+CREATE INDEX idx_payments_method    -- Faster payment method joins
+    ON payments(payment_method_id);
+
+CREATE INDEX idx_bookings_guest -- Faster guest booking lookup
+    ON bookings(guest_account_id);
+
+CREATE INDEX idx_bookings_accommodation -- Faster accommodation booking lookup
+    ON bookings(accommodation_id);
+
+CREATE INDEX idx_bookings_payment   -- Faster payment joins
+    ON bookings(payment_id);
+
+CREATE INDEX idx_reviews_accommodation  -- Faster accommodation review lookup
+    ON reviews(accommodation_id);
+
+CREATE INDEX idx_reviews_author -- Faster author review lookup
+    ON reviews(author_account_id);
+
+CREATE INDEX idx_messages_sender    -- Faster sender message lookup
+    ON messages(sender_id);
+
+CREATE INDEX idx_messages_receiver  -- Faster receiver message lookup
+    ON messages(receiver_id);
+
+CREATE INDEX idx_messages_conversation  -- Faster conversation message lookup
+    ON messages(conversation_id);
+
+CREATE INDEX idx_payout_accounts_host   -- Faster host payout account lookup
+    ON payout_accounts(host_account_id);
+
+CREATE INDEX idx_payouts_host   -- Faster host payout lookup
+    ON payouts(host_account_id);
+
+CREATE INDEX idx_payouts_booking    -- Faster booking payout lookup
+    ON payouts(booking_id);
+
+CREATE INDEX idx_notifications_account  -- Faster account notification lookup
+    ON notifications(account_id);
+
+
+-- Composite Indices
+CREATE INDEX idx_bookings_accommodation_dates   -- Optimize availability/date queries
+    ON bookings(accommodation_id, start_date, end_date);
+
+CREATE INDEX idx_calendar_accommodation_day -- Optimize calendar lookups
+    ON accommodation_calendar(accommodation_id, day);
+
+CREATE INDEX idx_messages_conversation_sent -- Optimize ordered conversation history
+    ON messages(conversation_id, sent_at);
+
+CREATE INDEX    -- Optimize recent accommodation reviews
+    ON reviews(accommodation_id, created_at);
+
+CREATE INDEX idx_accommodations_host_active -- Optimize active listings per host
+    ON accommodations(host_account_id, is_active);
+
+CREATE INDEX idx_notifications_account_sent -- Optimize recent account notifications
+    ON notifications(account_id, sent_at);

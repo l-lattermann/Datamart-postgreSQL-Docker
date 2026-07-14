@@ -20,3 +20,7 @@ setuptools==80.9.0
 six==1.17.0
 svgwrite==1.4.3
 tzdata==2025.2
+coverage
+py
+six
+dotenv

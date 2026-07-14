@@ -1,0 +1,74 @@
+2026-07-14 10:32:10 [INFO] datamart: Loading environment variables from Datamart-postgreSQL-Docker-AWS/.env
+2026-07-14 10:32:11 [INFO] datamart: Database connection OK.
+2026-07-14 10:32:11 [INFO] root: ==== test_all_tables_filled =====
+2026-07-14 10:32:11 [INFO] root: All tables populated
+2026-07-14 10:32:11 [INFO] root: 
+2026-07-14 10:32:11 [INFO] root: >notifications< has more 20 entities.
+2026-07-14 10:32:11 [INFO] root: >messages< has more 20 entities.
+2026-07-14 10:32:11 [INFO] root: >payment_methods< has more 20 entities.
+2026-07-14 10:32:11 [INFO] root: >accommodation_amenities< has more 20 entities.
+2026-07-14 10:32:11 [INFO] root: >payout_accounts< has more 20 entities.
+2026-07-14 10:32:11 [INFO] root: >paypal< has more 20 entities.
+2026-07-14 10:32:11 [INFO] root: >addresses< has more 20 entities.
+2026-07-14 10:32:11 [INFO] root: >accommodation_images< has more 20 entities.
+2026-07-14 10:32:11 [INFO] root: >accommodations< has more 20 entities.
+2026-07-14 10:32:11 [INFO] root: >credentials< has more 20 entities.
+2026-07-14 10:32:11 [INFO] root: >payments< has more 20 entities.
+2026-07-14 10:32:11 [INFO] root: >accounts< has more 20 entities.
+2026-07-14 10:32:11 [INFO] root: >images< has more 20 entities.
+2026-07-14 10:32:11 [INFO] root: >accommodation_calendar< has more 20 entities.
+2026-07-14 10:32:11 [INFO] root: >bookings< has more 20 entities.
+2026-07-14 10:32:11 [INFO] root: >payouts< has more 20 entities.
+2026-07-14 10:32:11 [INFO] root: >credit_cards< has more 20 entities.
+2026-07-14 10:32:11 [INFO] root: >reviews< has more 20 entities.
+2026-07-14 10:32:11 [INFO] root: >conversations< has more 20 entities.
+2026-07-14 10:32:11 [INFO] root: >review_images< has more 20 entities.
+2026-07-14 10:32:11 [INFO] root: >amenities< has more 20 entities.
+2026-07-14 10:32:11 [INFO] root: 
+2026-07-14 10:32:11 [INFO] root: ==== test_addresses_and_accommodations_relationship =====
+2026-07-14 10:32:11 [INFO] root: All addresses are assigned to accommodations.
+2026-07-14 10:32:11 [INFO] root: All accommodations have an address_id.
+2026-07-14 10:32:11 [INFO] root: 
+2026-07-14 10:32:11 [INFO] root: ==== test_accommodation_images_fk_integrity =====
+2026-07-14 10:32:11 [INFO] root: All accommodation_images have valid accommodation_id.
+2026-07-14 10:32:11 [INFO] root: All accommodation_images have valid image_id.
+2026-07-14 10:32:11 [INFO] root: 
+2026-07-14 10:32:11 [INFO] root: ==== test_payment_methods_have_valid_customer =====
+2026-07-14 10:32:11 [INFO] root: All payment_methods have valid customer_id (or NULL).
+2026-07-14 10:32:11 [INFO] root: 
+2026-07-14 10:32:11 [INFO] root: ==== test_payment_method_details_exclusive_and_complete =====
+2026-07-14 10:32:11 [INFO] root: All credit_cards have valid payment_method_id.
+2026-07-14 10:32:11 [INFO] root: All paypal rows have valid payment_method_id.
+2026-07-14 10:32:11 [INFO] root: Each payment_method has exactly one detail row (credit_cards XOR paypal).
+2026-07-14 10:32:11 [INFO] root: 
+2026-07-14 10:32:11 [INFO] root: ==== test_reviews_and_review_images_integrity =====
+2026-07-14 10:32:11 [INFO] root: All reviews have valid accommodation_id.
+2026-07-14 10:32:11 [INFO] root: All reviews have valid author_account_id.
+2026-07-14 10:32:11 [INFO] root: All review_images have valid review_id.
+2026-07-14 10:32:11 [INFO] root: All review_images have valid image_id.
+2026-07-14 10:32:11 [INFO] root: 
+2026-07-14 10:32:11 [INFO] root: ==== test_messages_integrity =====
+2026-07-14 10:32:11 [INFO] root: All messages have valid sender_id.
+2026-07-14 10:32:11 [INFO] root: All messages have valid receiver_id.
+2026-07-14 10:32:11 [INFO] root: All messages have valid conversation_id.
+2026-07-14 10:32:11 [INFO] root: 
+2026-07-14 10:32:11 [INFO] root: ==== test_payout_accounts_integrity =====
+2026-07-14 10:32:11 [INFO] root: All payout_accounts have valid host_account_id (or NULL).
+2026-07-14 10:32:11 [INFO] root: 
+2026-07-14 10:32:11 [INFO] root: ==== test_payouts_integrity =====
+2026-07-14 10:32:11 [INFO] root: All payouts have valid host_account_id (or NULL).
+2026-07-14 10:32:11 [INFO] root: All payouts have valid payout_account_id (or NULL).
+2026-07-14 10:32:11 [INFO] root: All payouts have valid booking_id (or NULL).
+2026-07-14 10:32:11 [INFO] root: 
+2026-07-14 10:32:11 [INFO] root: ==== test_notifications_integrity =====
+2026-07-14 10:32:11 [INFO] root: All notifications have valid account_id (or NULL).
+2026-07-14 10:32:11 [INFO] root: 
+2026-07-14 10:32:11 [INFO] root: ==== test_payments_integrity =====
+2026-07-14 10:32:11 [INFO] root: All payments have valid customer_id (or NULL).
+2026-07-14 10:32:11 [INFO] root: All payments have valid payment_method_id.
+2026-07-14 10:32:11 [INFO] root: 
+2026-07-14 10:32:11 [INFO] root: ==== test_bookings_integrity =====
+2026-07-14 10:32:11 [INFO] root: All bookings have valid guest_account_id.
+2026-07-14 10:32:11 [INFO] root: All bookings have valid accommodation_id.
+2026-07-14 10:32:11 [INFO] root: All bookings have valid payment_id (or NULL).
+2026-07-14 10:32:11 [INFO] root: 
